@@ -1,0 +1,104 @@
+{
+    "db_action": "create",
+    "db": {
+        "host": "localhost",
+        "name": "q-and-a",
+        "user": "root",
+        "password": "password"
+    },
+    "models": [
+        {
+            "name": "user",
+            "belongs_to": ["user"],
+            "properties": [
+                {
+                    "name": "email",
+                    "type": "string",
+                    "max_length": 255,
+                    "use_as_id": true
+                },
+                {
+                    "name": "password",
+                    "type": "hash",
+                    "use_as_password": true
+                },
+                {
+                    "name": "first_name",
+                    "type": "string",
+                    "max_length": 255
+                },
+                {
+                    "name": "family_name",
+                    "type": "string",
+                    "max_length": 255
+                }
+            ]
+        },
+        {
+            "name": "role",
+            "properties": [
+                {
+                    "name": "type",
+                    "type": ["user", "moderator", "admin"]
+                }
+            ]
+        },
+        {
+            "name": "question",
+            "belongs_to": ["user"],
+            "belongs_to_and_has_many": ["tag"],
+            "properties": [
+                {
+                    "name": "title",
+                    "type": "string",
+                    "max_length": 255
+                },
+                {
+                    "name": "text",
+                    "type": "string"
+                },
+                {
+                    "name": "created",
+                    "type": "datetime"
+                },
+                {
+                    "name": "edited",
+                    "type": "datetime"
+                }
+            ]
+        },
+        {
+            "name": "answer",
+            "belongs_to": [
+                {
+                    "name": "author",
+                    "model": "user"
+                },
+                {
+                    "name": "editor",
+                    "model": "user"
+                },
+                "question"
+            ],
+            "properties": [
+                {
+                    "name": "text",
+                    "type": "string"
+                },
+                {
+                    "name": "created",
+                    "type": "datetime"
+                },
+                {
+                    "name": "edited",
+                    "type": "datetime"
+                },
+                {
+                    "name": "accepted",
+                    "type": "bool"
+                }
+            ]
+        }
+    ],
+    "salt": [2, 3, 5, 7, 8, 13, 14, 20]
+}
