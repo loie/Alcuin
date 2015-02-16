@@ -68,6 +68,16 @@
             ]
         },
         {
+            "name": "tag",
+            "properties": [
+                {
+                    "name": "name",
+                    "type": "string",
+                    "max_length": 255
+                }
+            ]
+        }
+        {
             "name": "answer",
             "belongs_to": [
                 {
