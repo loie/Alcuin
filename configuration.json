@@ -9,13 +9,15 @@
     "models": [
         {
             "name": "user",
-            "belongs_to": ["user"],
+            "belongs_to": ["role"],
+            "use_as_auth": true,
             "properties": [
                 {
                     "name": "email",
                     "type": "string",
                     "max_length": 255,
-                    "use_as_id": true
+                    "use_as_id": true,
+                    "validation": "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
                 },
                 {
                     "name": "password",
