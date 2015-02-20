@@ -7,7 +7,9 @@
         "password": "password"
     },
     "web": {
-        "folder": "/"
+        "dir_root": "api",
+        "url_root": "/",
+        "assets": "assets"
     },
     "models": [
         {
