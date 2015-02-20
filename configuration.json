@@ -6,6 +6,9 @@
         "user": "root",
         "password": "password"
     },
+    "web": {
+        "folder": "/"
+    },
     "models": [
         {
             "name": "user",
