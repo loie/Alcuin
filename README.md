@@ -12,10 +12,10 @@ Alcuin creates a REST service for you, without having to fiddle around with comm
 
 ###How to Start
 
-There are only a few simple steps to take
+There are only a few simple steps to take:
 
 1. Download this repostory.
 2. Adapt the `configuration.json` to match your settings and wishes
 3. Upload the repository (including the edited `configuration.json`) to your webspace.
-4. Execute `install.php`.
+4. Execute `install.php` on your webspace
 5. Have a beer and enjoy life. You have just setup a fully working REST service. You're awesome!
