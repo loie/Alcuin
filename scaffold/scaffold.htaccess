@@ -1,3 +1,7 @@
+php_flag assert.active 1
+php_flag assert.bail 1
+
+
 RewriteEngine On
 RewriteBase {{folder}}
 RewriteCond %{REQUEST_FILENAME} !-f
