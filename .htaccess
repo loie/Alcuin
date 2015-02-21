@@ -1,0 +1,2 @@
+php_flag assert.active 1
+php_flag assert.bail 1
