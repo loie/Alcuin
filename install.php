@@ -5,13 +5,15 @@ class Installation {
     private $configuration;
     
     void __construct() {
-        if (file_exists(self::$CONFIG_FILE)) {
-            $json = file_get_content(self::$CONFIG_FILE);
-            $this->configuration = json_decode($json);
-        }
-        else {
-            echo 'ERROR: No configuration file found!';
-        }
+        $this->load_config();
+    }
+    
+    private function load_config () {
+        assert(file_exists(self::$CONFIG_FILE));
+        $json = file_get_content(self::$CONFIG_FILE);
+        assert($json !== null);
+        $this->configuration = json_decode($json);
+        assert(get_class($this->configuration) === 'stdClass');
     }
 }
 ?>
