@@ -1,5 +1,5 @@
 <?php
-include 'install.php';
+include 'Configuration.php';
 
 // check for existing of configuration.json
 // check for correct json format of configuration.json
