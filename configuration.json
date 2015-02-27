@@ -1,5 +1,5 @@
 {
-    "db_action": "create",
+    "drop_old_db": true,
     "db": {
         "host": "localhost",
         "name": "q-and-a",
