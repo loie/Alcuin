@@ -18,5 +18,14 @@ class Configuration {
         }
         assert(get_class($this->configuration) === 'stdClass');
     }
+    
+    public void __set ($name, $value) {
+        throw new Exception("Configuration is read-only");
+    }
+    
+    public void __get ($name, $value) {
+        assert($this->configuration !== null);
+        return $this->configuration->{$name};
+    }
 }
 ?>
