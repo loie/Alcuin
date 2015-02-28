@@ -9,7 +9,7 @@ class Request {
         $this->verb = $_SERVER['REQUEST_METHOD'];
         $this->url_elements = explode('/', $_SERVER['PATH_INFO']);
 
-        $this->parseIncomingParams();
+        $this->parse_incoming_params();
         // initialise json as default format
         $this->format = 'json';
         if(isset($this->parameters['format'])) {
@@ -18,7 +18,7 @@ class Request {
         return true;
     }
  
-    public function parseIncomingParams() {
+    public function parse_incoming_params() {
         $parameters = array();
  
         // first of all, pull the GET vars
@@ -55,7 +55,5 @@ class Request {
         }
         $this->parameters = $parameters;
     }
-
 }
-
 ?>
