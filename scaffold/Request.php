@@ -2,35 +2,34 @@
 
 class Request {
     public $url_elements;
-    public $verb;
-    public $parameters;
+    private $verb;
+    private $parameters;
  
-    public function __construct() {
-        $this->verb = $_SERVER['REQUEST_METHOD'];
-        $this->url_elements = explode('/', $_SERVER['PATH_INFO']);
+    public function __construct($srv_var, $request_param_string) {
+        $this->verb = $srv_var['REQUEST_METHOD'];
+        $this->url_elements = explode('/', $srv_var['PATH_INFO']);
 
-        $this->parse_incoming_params();
+        $this->parse_incoming_params($srv_var['QUERY_STRING'], $request_param_string, $srv_var['CONTENT_TYPE']);
         // initialise json as default format
         $this->format = 'json';
         if(isset($this->parameters['format'])) {
             $this->format = $this->parameters['format'];
         }
-        return true;
     }
  
-    public function parse_incoming_params() {
+    public function parse_incoming_params($servurl_params, $request__param_string, $content_type_string) {
         $parameters = array();
  
         // first of all, pull the GET vars
-        if (isset($_SERVER['QUERY_STRING'])) {
-            parse_str($_SERVER['QUERY_STRING'], $parameters);
+        if (isset()) {
+            parse_str($servurl_params, $parameters);
         }
  
         // now how about PUT/POST bodies? These override what we got from GET
-        $body = file_get_contents("php://input");
+        $body = $request_param_string;
         $content_type = false;
-        if(isset($_SERVER['CONTENT_TYPE'])) {
-            $content_type = $_SERVER['CONTENT_TYPE'];
+        if(isset($content_type)) {
+            $content_type = $content_type_string;
         }
         switch($content_type) {
             case "application/json":
@@ -54,6 +53,14 @@ class Request {
                 break;
         }
         $this->parameters = $parameters;
+    }
+    
+    public function getVerb() {
+        return $this->verb;
+    }
+    
+    public function getParameters() {
+        return $this->parameters;
     }
 }
 ?>
