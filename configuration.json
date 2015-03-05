@@ -1,7 +1,7 @@
 {
     "drop_old_db": true,
     "db": {
-        "host": "localhost",
+        "dhost": "localhost",
         "name": "q-and-a",
         "user": "root",
         "password": "password"
@@ -83,7 +83,7 @@
                     "max_length": 255
                 }
             ]
-        }
+        },
         {
             "name": "answer",
             "belongs_to": [

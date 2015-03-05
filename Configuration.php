@@ -1,16 +1,15 @@
 <?php
 
 class Configuration {
-    public static $CONFIG_FILE = 'configuration.json';
     private $configuration;
     
-    void __construct($file) {
+    function __construct ($file) {
         $this->load_config($file);
     }
     
     private function load_config ($file) {
         assert(file_exists($file));
-        $json = file_get_content($file);
+        $json = file_get_contents($file);
         $this->configuration = json_decode($json);
         if ($this->configuration == null) {
             $this->configuration = null;
@@ -19,11 +18,11 @@ class Configuration {
         assert(get_class($this->configuration) === 'stdClass');
     }
     
-    public void __set ($name, $value) {
+    public function __set ($name, $value) {
         throw new Exception("Configuration is read-only");
     }
     
-    public void __get ($name, $value) {
+    public function __get ($name) {
         assert($this->configuration !== null);
         return $this->configuration->{$name};
     }
