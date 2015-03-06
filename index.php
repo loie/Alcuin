@@ -12,6 +12,24 @@ function get_missing_prop($obj, $prop_array) {
     return null;
 }
 
+function success($next_q) {
+    $succ = '<strong class="text-success">Success</strong></li>';
+    $succ .= '<li>' . $next_q . '&hellip;';
+    return $succ;
+}
+
+function error($error, $details) {
+    echo '<strong class="text-danger">Failed</strong></li>';
+    echo '</ul>';
+    echo '<div class="alert alert-danger" role="alert"><strong>An error occured:</strong> ' . $error;
+    if ($details != null) {
+        echo '<hr /><strong>Error message:</strong>';
+        echo '<pre>' . $details . '</pre>';
+    }
+    echo '</div>';
+    die();
+}
+
 echo '<!DOCTYPE html>
     <head>
         <title>Alcuin &mdash; DB and REST for the layy ones</title>
@@ -22,49 +40,41 @@ echo '<!DOCTYPE html>
 // check for existing of configuration.json
 echo '<li>Searching for configuration file <code>' . $config_file . '</code>&hellip; ';
 if (file_exists($config_file)) {
-    echo '<strong class="text-success">Success</strong></li>';
-    echo '<li>Trying to parse configuration file <code>' . $config_file . '</code>&hellip; ';
+    echo success('Trying to parse configuration file <code>' . $config_file . '</code>');
     $configuration = null;
     try {
         $configuration = new Configuration($config_file);
         assert($configuration != null);
-        echo '<strong class="text-success">Success</strong></li>';
-        echo '<li>Checking for database settings &hellip; ';
+        echo success('Checking for database settings');
         $db_conf = $configuration->db;
         if ($db_conf == null) {
-            echo '<strong class="text-danger">Failed</strong></li>';
-            echo '</ul>';
-            echo '<div class="alert alert-danger" role="alert"><strong>An error occured:</strong> The file <code>'.$config_file.'</code> has not defined a database configuration.</div>';
-            die();
+            error('The file <code>'.$config_file.'</code> has not defined a database configuration');
         } else {
-            echo '<strong class="text-success">Success</strong></li>';
-            echo '<li>Checking database properties &hellip; ';
+            echo success('Checking database properties');
             $db_required_props = array('host', 'name', 'user', 'password');
             $missing_prop = get_missing_prop($db_conf, $db_required_props);
             if ($missing_prop == null) {
-                $db = new PDO('mysql:host='.$db_conf->host.';charset=utf8', $db_conf->user, $db_conf->password);
-                $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-                $db->exec('USE ' . $db->name);
+                echo success('Connecting to server');
+                try {
+                    $db = new PDO('mysql:host='.$db_conf->host.';charset=utf8', $db_conf->user, $db_conf->password);
+                    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+                    $db->exec('USE ' . $db->name);
+                }
+                catch (Exception $e) {
+                   error('The database could not be connected', $e->getMessage());
+                }
             } else {
-                echo '<strong class="text-danger">Failed</strong></li>';
-                echo '</ul>';
-                echo '<div class="alert alert-danger" role="alert"><strong>An error occured:</strong> The file <code>'.$config_file.'</code> has not defined the property <code>'.$missing_prop.'</code> in the database configuration.</div>';
-                die();
+                error('The file <code>'.$config_file.'</code> has not defined the property <code>'.$missing_prop.'</code> in the database configuration');
             }
         }
     }
     catch (Exception $e) {
-        echo '<strong class="text-danger">Failed</strong></li>';
-        echo '</ul>';
-        echo '<div class="alert alert-danger" role="alert"><strong>An error occured:</strong> The file <code>'.$config_file.'</code> is not in valid JSON format.</div>';
-        die();
+        error('The file <code>'.$config_file.'</code> is not in valid JSON format');
     }
 
 } else {
-    echo '<strong class="text-danger">Failed</strong></li>';
-    echo '</ul>';
-    echo '<div class="alert alert-danger" role="alert"><strong>An error occured:</strong> The file <code>'.$config_file.'</code> does not exists.</div>';
+    error('The file <code>'.$config_file.'</code> does not exists.');
 }
 
 echo '</body>';

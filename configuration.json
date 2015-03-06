@@ -1,7 +1,7 @@
 {
     "drop_old_db": true,
     "db": {
-        "dhost": "localhost",
+        "host": "localhost",
         "name": "q-and-a",
         "user": "root",
         "password": "password"
