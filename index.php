@@ -59,10 +59,16 @@ if (file_exists($config_file)) {
                     $db = new PDO('mysql:host='.$db_conf->host.';charset=utf8', $db_conf->user, $db_conf->password);
                     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-                    $db->exec('USE ' . $db->name);
+                    try {
+                        echo success('Checking whether database "' . $db_conf->name . '" exists');
+                        $db->exec('USE ' . $db_conf->name);
+                    }
+                    catch (Exception $e) {
+                        error('The database ' . $db_conf->name . 'could not be connected', $e->getMessage());
+                    }
                 }
                 catch (Exception $e) {
-                   error('The database could not be connected', $e->getMessage());
+                   error('The server could not be connected', $e->getMessage());
                 }
             } else {
                 error('The file <code>'.$config_file.'</code> has not defined the property <code>'.$missing_prop.'</code> in the database configuration');
@@ -74,7 +80,7 @@ if (file_exists($config_file)) {
     }
 
 } else {
-    error('The file <code>'.$config_file.'</code> does not exists.');
+    error('The file <code>'.$config_file.'</code> does not exists. Have you forgotten to ');
 }
 
 echo '</body>';

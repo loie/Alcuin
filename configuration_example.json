@@ -4,7 +4,7 @@
         "host": "localhost",
         "name": "qanda",
         "user": "root",
-        "password": "bernie"
+        "password": "password"
     },
     "web": {
         "dir_root": "api",
