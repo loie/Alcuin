@@ -61,8 +61,12 @@ if (file_exists($config_file)) {
                     $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
                     try {
                         echo success('Checking whether database "' . $db_conf->name . '" exists');
-                        // Check if DB exists
-                        // Check is shall be dropped
+                        if ($db_conf->db_drop) {
+                            $db->exec('DROP SCHEMA IF EXISTS ' .$db_conf->name);    
+                        }
+                        // trying to create
+                        //CREATE SCHEMA IF NOT EXISTS schema_name
+                        $db->exec('USE ' . $db_conf->name);
                         // use DB
                         // foreach model
                             // create table
@@ -71,7 +75,7 @@ if (file_exists($config_file)) {
                                 // add column with name, datatype
                                 // add Index
                                 
-                        $db->exec('USE ' . $db_conf->name);
+                        
                     }
                     catch (Exception $e) {
                         error('The database ' . $db_conf->name . 'could not be connected', $e->getMessage());
