@@ -61,6 +61,16 @@ if (file_exists($config_file)) {
                     $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
                     try {
                         echo success('Checking whether database "' . $db_conf->name . '" exists');
+                        // Check if DB exists
+                        // Check is shall be dropped
+                        // use DB
+                        // foreach model
+                            // create table
+                            // foreach prop
+                                // check if column exists
+                                // add column with name, datatype
+                                // add Index
+                                
                         $db->exec('USE ' . $db_conf->name);
                     }
                     catch (Exception $e) {
@@ -78,17 +88,15 @@ if (file_exists($config_file)) {
     catch (Exception $e) {
         error('The file <code>'.$config_file.'</code> is not in valid JSON format');
     }
+    
+    // create php classes
+    // foreach model
+        // create php controller based on scaffold
+        // create php model based on scaffold
 
 } else {
     error('The file <code>'.$config_file.'</code> does not exists. Have you forgotten to ');
 }
 
 echo '</body>';
-
-// check for correct json format of configuration.json
-// create "ready to go" button
-// perform db install
-// perform php class generation
-
-
 ?>
