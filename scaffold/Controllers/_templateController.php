@@ -1,7 +1,13 @@
 <?php
 class {{model_name}}sController extends MyController
 {
-    public function getAction($request) {
+
+    // public function __callfunction($name, $params) {
+    //      $result = $this->{blAfunctionName}($params);
+    //      $this->show_in_view()  
+    // }
+
+    private function get_action($request) {
         if(isset($request->url_elements[2])) {
             $user_id = (int)$request->url_elements[2];
             if(isset($request->url_elements[3])) {
@@ -21,10 +27,32 @@ class {{model_name}}sController extends MyController
         return $data;
     }
  
-    public function postAction($request) {
+    private function post_action($request) {
+        // update model
+
+
         $data = $request->parameters;
         $data['message'] = "This data was submitted";
         return $data;
+    }
+
+    private function put_action($request) {
+        // create model
+        $model = new {{model_name}}Model();
+        assert($model != null);
+        foreach ($request as $key => $value) {
+            $model->{$key} = $value;
+        }
+        return $model;
+    }
+
+    private function delete_action($request) {
+
+    }
+
+    private function show_in_view($data) {
+        $view = new JsonView($data);
+        $view->render($data);
     }
 }
 ?>
