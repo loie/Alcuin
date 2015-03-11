@@ -2,7 +2,7 @@
     "drop_old_db": true,
     "db": {
         "host": "localhost",
-        "name": "qanda",
+        "name": "test",
         "user": "root",
         "password": "bernie"
     },

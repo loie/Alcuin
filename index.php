@@ -60,11 +60,33 @@ if (file_exists($config_file)) {
                     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
                     try {
-                        echo success('Checking whether database "' . $db_conf->name . '" exists');
-                        $db->exec('USE ' . $db_conf->name);
+                        if ($configuration->drop_old_db) {
+                            echo success('Dropping old database because of configuration');
+                            try {
+                                $db->exec('IF EXISTS DROP SCHEMA ' . $db_conf->name);
+                            }
+                            catch (Exception $e) {
+                                error('Could not drop old database ' . $db_conf->name, $e->getMessage());
+                            }
+                        }
+                        echo success('Checking whether database "' . $db_conf->name . '" exists and creating a new one if it doesn\'t exists');
+                        try {
+                            $db->exec('IF NOT EXISTS CREATE SCHEMA `' . $db_conf->name . '` DEFAULT CHARACTER SET utf8 ;');
+                        }
+                        catch (Exception $e) {
+                            error ($e, 'Could not create new database');
+                        }
+                        echo success('Selecting the new database');
+                        try {
+                            $db->exec('USE ' . $db_conf->name);
+                        }
+                        catch (Exception $e){
+                            error($e, 'Could not select new database' . $db_conf->name);
+                        }
+                        echo success('Creating tables');
                     }
                     catch (Exception $e) {
-                        error('The database ' . $db_conf->name . 'could not be connected', $e->getMessage());
+                        error('The database ' . $db_conf->name . ' could not be connected', $e->getMessage());
                     }
                 }
                 catch (Exception $e) {
