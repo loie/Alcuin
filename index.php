@@ -63,7 +63,7 @@ if (file_exists($config_file)) {
                         if ($configuration->drop_old_db) {
                             echo success('Dropping old database because of configuration');
                             try {
-                                $db->exec('IF EXISTS DROP SCHEMA ' . $db_conf->name);
+                                $db->exec('IF EXISTS DROP SCHEMA `' . $db_conf->name . '`');
                             }
                             catch (Exception $e) {
                                 error('Could not drop old database ' . $db_conf->name, $e->getMessage());
@@ -84,6 +84,14 @@ if (file_exists($config_file)) {
                             error($e, 'Could not select new database' . $db_conf->name);
                         }
                         echo success('Creating tables');
+                        $models = $configuration->models;
+                        assert($models !== null);
+                        echo '<ul><li>Models were found in the configuration file&hellip;';
+                        foreach ($models as $model) {
+                            create_model_in_db($model);
+                        }
+                        echo '</li>'; // Mddels close
+
                     }
                     catch (Exception $e) {
                         error('The database ' . $db_conf->name . ' could not be connected', $e->getMessage());
@@ -100,6 +108,11 @@ if (file_exists($config_file)) {
     catch (Exception $e) {
         error('The file <code>'.$config_file.'</code> is not in valid JSON format');
     }
+    
+    // create php classes
+    // foreach model
+        // create php controller based on scaffold
+        // create php model based on scaffold
 
 } else {
     error('The file <code>'.$config_file.'</code> does not exists. Have you forgotten to ');
@@ -107,10 +120,14 @@ if (file_exists($config_file)) {
 
 echo '</body>';
 
-// check for correct json format of configuration.json
-// create "ready to go" button
-// perform db install
-// perform php class generation
 
-
+function create_model_in_db($model) {
+    CREATE TABLE `test`.`name1` (
+  `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table',
+  `email` VARCHAR(255) CHARACTER SET 'utf8' NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC))
+PACK_KEYS = Default
+ROW_FORMAT = Default;
+}
 ?>
