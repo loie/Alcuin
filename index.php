@@ -63,7 +63,7 @@ if (file_exists($config_file)) {
                         if ($configuration->drop_old_db) {
                             echo success('Dropping old database because of configuration');
                             try {
-                                $db->exec('IF EXISTS DROP SCHEMA `' . $db_conf->name . '`');
+                                $db->exec('DROP SCHEMA IF EXISTS `' . $db_conf->name . '`');
                             }
                             catch (Exception $e) {
                                 error('Could not drop old database ' . $db_conf->name, $e->getMessage());
@@ -71,7 +71,7 @@ if (file_exists($config_file)) {
                         }
                         echo success('Checking whether database "' . $db_conf->name . '" exists and creating a new one if it doesn\'t exists');
                         try {
-                            $db->exec('IF NOT EXISTS CREATE SCHEMA `' . $db_conf->name . '` DEFAULT CHARACTER SET utf8 ;');
+                            $db->exec('CREATE SCHEMA IF NOT EXISTS`' . $db_conf->name . '_asdf` DEFAULT CHARACTER SET utf8 ;');
                         }
                         catch (Exception $e) {
                             error ($e, 'Could not create new database');
@@ -88,7 +88,8 @@ if (file_exists($config_file)) {
                         assert($models !== null);
                         echo '<ul><li>Models were found in the configuration file&hellip;';
                         foreach ($models as $model) {
-                            create_model_in_db($model);
+                            echo success('Creating Table for Model ' . $model->name);
+                            create_model_in_db($db_conf->name, $model);
                         }
                         echo '</li>'; // Mddels close
 
@@ -121,13 +122,17 @@ if (file_exists($config_file)) {
 echo '</body>';
 
 
-function create_model_in_db($model) {
-    CREATE TABLE `test`.`name1` (
-  `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table',
-  `email` VARCHAR(255) CHARACTER SET 'utf8' NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC))
-PACK_KEYS = Default
-ROW_FORMAT = Default;
+function create_model_in_db($db_name, $model) {
+    $query_string = 'CREATE TABLE `' . $db_name . '`.`' . $model->name . '` (';
+        
+        
+    $query_string .= ')';
+
+//   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table',
+//   `email` VARCHAR(255) CHARACTER SET 'utf8' NOT NULL,
+//   PRIMARY KEY (`id`),
+//   UNIQUE INDEX `email_UNIQUE` (`email` ASC))
+// PACK_KEYS = Default
+// ROW_FORMAT = Default;
 }
 ?>

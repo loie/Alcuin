@@ -1,11 +1,11 @@
 <?php
-class {{model_name}}sController extends MyController
+class {{model_name}}Controller extends MyController
 {
 
-    // public function __callfunction($name, $params) {
-    //      $result = $this->{blAfunctionName}($params);
-    //      $this->show_in_view()  
-    // }
+    public function __call($name, $arguments) {
+         $result = $this->{$name}($arguments);
+         $this->show_in_view($result);
+    }
 
     private function get_action($request) {
         if(isset($request->url_elements[2])) {
