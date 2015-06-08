@@ -83,13 +83,15 @@ if (file_exists($config_file)) {
                         catch (Exception $e){
                             error($e, 'Could not select new database' . $db_conf->name);
                         }
-                        echo success('Creating tables');
+                        echo success('Creating models and controllers');
                         $models = $configuration->models;
                         assert($models !== null);
                         echo '<ul><li>Models were found in the configuration file&hellip;';
                         foreach ($models as $model) {
-                            echo success('Creating Table for Model ' . $model->name);
+                            echo '';
+                            echo success('Creating Table for Model <code>' . $model->name . '</code>');
                             create_model_in_db($db_conf->name, $model);
+                            echo success('Creating Model '. $model->name . ' ')
                         }
                         echo '</li>'; // Mddels close
 
@@ -109,16 +111,6 @@ if (file_exists($config_file)) {
     catch (Exception $e) {
         error('The file <code>'.$config_file.'</code> is not in valid JSON format');
     }
-    
-    // create php classes
-    // foreach model
-    foreach ($configuration->models as $model) {
-        create_model_in_filesystem($model);
-        create_controller_in_filesystem($model);
-    }
-        // create php controller based on scaffold
-        // create php model based on scaffold
-
 } else {
     error('The file <code>'.$config_file.'</code> does not exists. Have you forgotten to ');
 }
@@ -141,6 +133,7 @@ function create_model_in_db($db_name, $model) {
 }
 
 function create_model_in_filesystem($model) {
+    echo success('Creating$)
 
 }
 
