@@ -91,7 +91,7 @@ if (file_exists($config_file)) {
                             echo '';
                             echo success('Creating Table for Model <code>' . $model->name . '</code>');
                             create_model_in_db($db_conf->name, $model);
-                            echo success('Creating Model '. $model->name . ' ')
+                            echo success('Creating Model '. $model->name . ' ');
                         }
                         echo '</li>'; // Mddels close
 
