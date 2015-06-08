@@ -71,7 +71,7 @@ if (file_exists($config_file)) {
                         }
                         echo success('Checking whether database "' . $db_conf->name . '" exists and creating a new one if it doesn\'t exists');
                         try {
-                            $db->exec('CREATE SCHEMA IF NOT EXISTS`' . $db_conf->name . '_asdf` DEFAULT CHARACTER SET utf8 ;');
+                            $db->exec('CREATE SCHEMA IF NOT EXISTS`' . $db_conf->name . '` DEFAULT CHARACTER SET utf8 ;');
                         }
                         catch (Exception $e) {
                             error ($e, 'Could not create new database');
@@ -112,6 +112,10 @@ if (file_exists($config_file)) {
     
     // create php classes
     // foreach model
+    foreach ($configuration->models as $model) {
+        create_model_in_filesystem($model);
+        create_controller_in_filesystem($model);
+    }
         // create php controller based on scaffold
         // create php model based on scaffold
 
@@ -134,5 +138,13 @@ function create_model_in_db($db_name, $model) {
 //   UNIQUE INDEX `email_UNIQUE` (`email` ASC))
 // PACK_KEYS = Default
 // ROW_FORMAT = Default;
+}
+
+function create_model_in_filesystem($model) {
+
+}
+
+function create_controller_in_filesystem($model) {
+
 }
 ?>
