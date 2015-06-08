@@ -20,9 +20,11 @@ class {{model_name}}Controller extends MyController
                     break;
             } else {
                 $data["message"] = "here is the info for user " . $user_id;
+                $data['meta'] = array('success' => true);
             }
         } else {
             $data["message"] = "you want a list of users";
+            $data['meta'] = array('success' => true, 'total' => 12);
         }
         return $data;
     }
