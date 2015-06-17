@@ -91,7 +91,7 @@ if (file_exists($config_file)) {
                             echo '';
                             echo success('Creating Table for Model <code>' . $model->name . '</code>');
                             create_model_in_db($db_conf->name, $model);
-                            echo success('Creating Model '. $model->name . ' ');
+                            echo success('Creating PHP classes for Model'. $model->name . ' ');
                         }
                         echo '</li>'; // Mddels close
 
@@ -133,11 +133,12 @@ function create_model_in_db($db_name, $model) {
 }
 
 function create_model_in_filesystem($model) {
-    echo success('Creating$)
+    echo success('Creating Model class for ' . $model);
 
 }
 
 function create_controller_in_filesystem($model) {
+    echo success('Creating controller class for ' . $model);
 
 }
 ?>
