@@ -120,8 +120,13 @@ echo '</body>';
 
 function create_model_in_db($db_name, $model) {
     $query_string = 'CREATE TABLE `' . $db_name . '`.`' . $model->name . '` (';
+    $query_string .= "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table', "
+    foreach ($model->properties as $property) {
+        // name
+        $query_string .= '`' . $property->name . '`';
+    }
         
-        
+    $query_string .= 'PRIMARY KEY (`id`),'
     $query_string .= ')';
 
 //   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table',
