@@ -1,5 +1,6 @@
 <?php
 include 'Configuration.php';
+include 'includes/Property.php';
 
 $config_file = 'configuration.json';
 
@@ -90,7 +91,7 @@ if (file_exists($config_file)) {
                         foreach ($models as $model) {
                             echo '';
                             echo success('Creating Table for Model <code>' . $model->name . '</code>');
-                            create_model_in_db($db_conf->name, $model);
+                            create_model_in_db($db, $db_conf->name, $model);
                             echo success('Creating PHP classes for Model'. $model->name . ' ');
                         }
                         echo '</li>'; // Mddels close
@@ -118,16 +119,36 @@ if (file_exists($config_file)) {
 echo '</body>';
 
 
-function create_model_in_db($db_name, $model) {
+function create_model_in_db($db, $db_name, $model) {
     $query_string = 'CREATE TABLE `' . $db_name . '`.`' . $model->name . '` (';
-    $query_string .= "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table', "
-    foreach ($model->properties as $property) {
-        // name
-        $query_string .= '`' . $property->name . '`';
+    $statements = [];
+    $index_statements = [];
+    array_push($statements, "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table' ");
+    if (isset($model->belongs_to) && is_array($model->belongs_to)) {
+        foreach ($model->belongs_to as $relation) {
+            if (is_object($relation) {
+
+            }) else if (is_string($relation)) {
+                
+            }
+        }
     }
-        
-    $query_string .= 'PRIMARY KEY (`id`),'
+    foreach ($model->properties as $property) {
+        $prop = new Property($property);
+        array_push($statements, $prop->get_db_column_statement());
+        $index_statement = $prop->get_db_column_index_statements();
+        if ($index_statement !== NULL) {
+            array_push($index, $index_statement);
+        }
+    }
+    array_push($statements, 'PRIMARY KEY (`id`)');
+    $all_statements = array_merge($statements, $index_statements);
+    $query_string .= implode(',', $all_statements);
     $query_string .= ')';
+
+    // echo $query_string;
+    $db->exec($query_string);
+
 
 //   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table',
 //   `email` VARCHAR(255) CHARACTER SET 'utf8' NOT NULL,
@@ -137,9 +158,9 @@ function create_model_in_db($db_name, $model) {
 // ROW_FORMAT = Default;
 }
 
+
 function create_model_in_filesystem($model) {
     echo success('Creating Model class for ' . $model);
-
 }
 
 function create_controller_in_filesystem($model) {
