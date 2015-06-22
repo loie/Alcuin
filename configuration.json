@@ -17,7 +17,8 @@
             "properties": [
                 {
                     "name": "type",
-                    "type": ["user", "moderator", "admin"]
+                    "type": ["user", "moderator", "admin"],
+                    "null_allowed": false
                 }
             ]
         },
@@ -31,6 +32,7 @@
                     "type": "string",
                     "max_length": 255,
                     "use_as_id": true,
+                    "null_allowed": false,
                     "validation": "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
                 },
                 {
@@ -45,6 +47,16 @@
                 },
                 {
                     "name": "family_name",
+                    "type": "string",
+                    "max_length": 255
+                }
+            ]
+        },
+        {
+            "name": "tag",
+            "properties": [
+                {
+                    "name": "name",
                     "type": "string",
                     "max_length": 255
                 }
@@ -71,16 +83,6 @@
                 {
                     "name": "edited",
                     "type": "datetime"
-                }
-            ]
-        },
-        {
-            "name": "tag",
-            "properties": [
-                {
-                    "name": "name",
-                    "type": "string",
-                    "max_length": 255
                 }
             ]
         },
