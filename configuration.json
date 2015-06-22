@@ -13,6 +13,15 @@
     },
     "models": [
         {
+            "name": "role",
+            "properties": [
+                {
+                    "name": "type",
+                    "type": ["user", "moderator", "admin"]
+                }
+            ]
+        },
+        {
             "name": "user",
             "belongs_to": ["role"],
             "use_as_auth": true,
@@ -38,15 +47,6 @@
                     "name": "family_name",
                     "type": "string",
                     "max_length": 255
-                }
-            ]
-        },
-        {
-            "name": "role",
-            "properties": [
-                {
-                    "name": "type",
-                    "type": ["user", "moderator", "admin"]
                 }
             ]
         },

@@ -92,7 +92,7 @@ if (file_exists($config_file)) {
                             echo '';
                             echo success('Creating Table for Model <code>' . $model->name . '</code>');
                             create_model_in_db($db, $db_conf->name, $model);
-                            echo success('Creating PHP classes for Model'. $model->name . ' ');
+                            echo success('Creating PHP classes for Model <code>'. $model->name . '</code>.');
                         }
                         echo '</li>'; // Mddels close
 
@@ -120,16 +120,25 @@ echo '</body>';
 
 
 function create_model_in_db($db, $db_name, $model) {
-    $query_string = 'CREATE TABLE `' . $db_name . '`.`' . $model->name . '` (';
+    $query_string = 'CREATE TABLE `' . $db_name . '`.`' . $model->name . 's` (';
     $statements = [];
+    $relation_statements = [];
     $index_statements = [];
+    $constrain_statements = [];
+
     array_push($statements, "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table' ");
     if (isset($model->belongs_to) && is_array($model->belongs_to)) {
         foreach ($model->belongs_to as $relation) {
-            if (is_object($relation) {
+            if (is_object($relation)) {
 
-            }) else if (is_string($relation)) {
-                
+            }
+            else if (is_string($relation)) {
+                $column_name = $relation . '_id';
+                $index_name = $column_name . '_INDEX';
+                $constrain_name = $column_name . '_CONSTRAIN';
+                array_push($statements, '`' . $relation . '_id` INT NOT NULL');
+                array_push($index_statements, 'INDEX `' . $index_name . '` (`' . $column_name . '` ASC)');
+                array_push($constrain_statements, ' ADD CONSTRAINT `' . $constrain_name . '` FOREIGN KEY (`' . $index_name . '`) REFERENCES `' . $db_name . '`.`' . $model->name . '` (`id`) ON DELETE CASCADE ON UPDATE CASCADE ');
             }
         }
     }
@@ -138,7 +147,7 @@ function create_model_in_db($db, $db_name, $model) {
         array_push($statements, $prop->get_db_column_statement());
         $index_statement = $prop->get_db_column_index_statements();
         if ($index_statement !== NULL) {
-            array_push($index, $index_statement);
+            array_push($index_statements, $index_statement);
         }
     }
     array_push($statements, 'PRIMARY KEY (`id`)');
@@ -146,16 +155,18 @@ function create_model_in_db($db, $db_name, $model) {
     $query_string .= implode(',', $all_statements);
     $query_string .= ')';
 
-    // echo $query_string;
     $db->exec($query_string);
 
+    if (isset($model->belongs_to) && is_array($model->belongs_to)) {
+        $add_constraints = 'ALTER TABLE `' . $db_name . '`.`' . $model->name . '`';
+        $add_constraints .= implode(',', $constrain_statements);
 
-//   `id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table',
-//   `email` VARCHAR(255) CHARACTER SET 'utf8' NOT NULL,
-//   PRIMARY KEY (`id`),
-//   UNIQUE INDEX `email_UNIQUE` (`email` ASC))
-// PACK_KEYS = Default
-// ROW_FORMAT = Default;
+        echo '<pre>' . $add_constraints .'</pre>';
+
+        $db->exec($add_constraints);
+    }
+
+
 }
 
 
