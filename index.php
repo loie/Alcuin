@@ -138,7 +138,7 @@ function create_model_in_db($db, $db_name, $model) {
                 $constrain_name = $column_name . '_CONSTRAIN';
                 array_push($statements, '`' . $relation . '_id` INT NOT NULL');
                 array_push($index_statements, 'INDEX `' . $index_name . '` (`' . $column_name . '` ASC)');
-                array_push($constrain_statements, ' ADD CONSTRAINT `' . $constrain_name . '` FOREIGN KEY (`' . $index_name . '`) REFERENCES `' . $db_name . '`.`' . $model->name . '` (`id`) ON DELETE CASCADE ON UPDATE CASCADE ');
+                array_push($constrain_statements, ' ADD CONSTRAINT `' . $constrain_name . '` FOREIGN KEY (`' . $column_name . '`) REFERENCES `' . $db_name . '`.`' . $relation . 's` (`id`) ON DELETE CASCADE ON UPDATE CASCADE ');
             }
         }
     }
@@ -152,17 +152,16 @@ function create_model_in_db($db, $db_name, $model) {
     }
     array_push($statements, 'PRIMARY KEY (`id`)');
     $all_statements = array_merge($statements, $index_statements);
-    $query_string .= implode(',', $all_statements);
+    $query_string .= implode(', ', $all_statements);
     $query_string .= ')';
+
+    echo '<pre>' . $query_string . '</pre>';
 
     $db->exec($query_string);
 
     if (isset($model->belongs_to) && is_array($model->belongs_to)) {
-        $add_constraints = 'ALTER TABLE `' . $db_name . '`.`' . $model->name . '`';
+        $add_constraints = 'ALTER TABLE `' . $db_name . '`.`' . $model->name . 's`';
         $add_constraints .= implode(',', $constrain_statements);
-
-        echo '<pre>' . $add_constraints .'</pre>';
-
         $db->exec($add_constraints);
     }
 
