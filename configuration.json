@@ -17,8 +17,7 @@
             "properties": [
                 {
                     "name": "type",
-                    "type": ["user", "moderator", "admin"],
-                    "null_allowed": false
+                    "type": ["user", "moderator", "admin"]
                 }
             ]
         },
@@ -32,7 +31,6 @@
                     "type": "string",
                     "max_length": 255,
                     "use_as_id": true,
-                    "null_allowed": false,
                     "validation": "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
                 },
                 {
@@ -43,12 +41,14 @@
                 {
                     "name": "first_name",
                     "type": "string",
-                    "max_length": 255
+                    "max_length": 255,
+                    "null_allowed": true
                 },
                 {
                     "name": "family_name",
                     "type": "string",
-                    "max_length": 255
+                    "max_length": 255,
+                    "null_allowed": true
                 }
             ]
         },
@@ -82,7 +82,8 @@
                 },
                 {
                     "name": "edited",
-                    "type": "datetime"
+                    "type": "datetime",
+                    "null_allowed": true
                 }
             ]
         },
@@ -110,7 +111,8 @@
                 },
                 {
                     "name": "edited",
-                    "type": "datetime"
+                    "type": "datetime",
+                    "null_allowed": true
                 },
                 {
                     "name": "accepted",

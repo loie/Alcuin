@@ -7,6 +7,10 @@ class Property {
         $this->description  = $description;
     }
 
+    private function is_null() {
+        return $description->null_allowed === true;
+    }
+
     public function get_db_column_statement() {
         $line = '`' . $this->description->name . '` ';
 
@@ -23,16 +27,16 @@ class Property {
             switch ($this->description->type) {
                 case 'string':
                     if (isset($this->description->max_length) && is_numeric($this->description->max_length)) {
-                        $line .= 'VARCHAR(' . $this->description->max_length . ") CHARACTER SET 'utf8' NOT NULL";
+                        $line .= 'VARCHAR(' . $this->description->max_length . ") CHARACTER SET 'utf8'";
                     } else {
-                        $line .= "TEXT CHARACTER SET 'utf8' NOT NULL";
+                        $line .= "TEXT CHARACTER SET 'utf8'";
                     }
                     break;
                 case 'hash':
-                    $line .= "CHAR(40) CHARACTER SET 'utf8' NOT NULL";
+                    $line .= "CHAR(40) CHARACTER SET 'utf8'";
                     break;
                 case 'datetime':
-                    $line .= "DATETIME NULL DEFAULT NULL";
+                    $line .= "DATETIME";
                     break;
                 case 'integer':
                     break;
@@ -45,6 +49,8 @@ class Property {
                     break;
             }
         }
+        $line .= $this->is_null() ? '' : ' NOT ';
+        $line .= 'NULL';
 
         return $line;
     }
