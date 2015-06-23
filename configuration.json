@@ -117,6 +117,18 @@
                 {
                     "name": "accepted",
                     "type": "bool"
+                },
+                {
+                    "name": "upvotes",
+                    "type": "int"
+                },
+                {
+                    "name": "downvotes",
+                    "type": "int"
+                },
+                {
+                    "name": "dummy",
+                    "type": "float"
                 }
             ]
         }

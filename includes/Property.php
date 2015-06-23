@@ -8,7 +8,7 @@ class Property {
     }
 
     private function is_null() {
-        return $description->null_allowed === true;
+        return $this->description->null_allowed === true;
     }
 
     public function get_db_column_statement() {
@@ -36,21 +36,23 @@ class Property {
                     $line .= "CHAR(40) CHARACTER SET 'utf8'";
                     break;
                 case 'datetime':
-                    $line .= "DATETIME";
+                    $line .= 'DATETIME';
                     break;
-                case 'integer':
+                case 'int':
+                    $line .= 'INT';
                     break;
                 case 'float':
+                    $line .= 'DOUBLE';
                     break;
                 case 'bool':
-                    $line .= "TINYINT(1) NULL";
+                    $line .= "TINYINT(1)";
                     break;
                 default:
                     break;
             }
         }
-        $line .= $this->is_null() ? '' : ' NOT ';
-        $line .= 'NULL';
+        $line .= $this->is_null() ? '' : ' NOT';
+        $line .= ' NULL';
 
         return $line;
     }
