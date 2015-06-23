@@ -10,9 +10,12 @@ echo '<!DOCTYPE html>
                 <title>Alcuin &mdash; DB and REST for the layy ones</title>
                 <link rel="stylesheet" href="css/bootstrap.min.css">
             </head>
-            <body><div class="container"><h1>Alcuin</h1><hr /><ul class="list-unstyled">';
+            <body>
+                <div class="container"><h1>Alcuin</h1><hr />
+                    <ul class="list-unstyled">';
 
 
 $main = new Main($config_file);
 $main->exec();
+echo '</body>';
 ?>
