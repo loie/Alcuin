@@ -1,0 +1,9 @@
+php_flag assert.active 1
+php_flag assert.bail 1
+
+
+RewriteEngine On
+RewriteBase {{folder}}
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1 [L]

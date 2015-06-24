@@ -21,9 +21,7 @@ class Request {
         $parameters = array();
  
         // first of all, pull the GET vars
-        if (isset()) {
-            parse_str($servurl_params, $parameters);
-        }
+        parse_str($servurl_params, $parameters);
  
         // now how about PUT/POST bodies? These override what we got from GET
         $body = $request_param_string;

@@ -76,7 +76,6 @@ class Property {
             $statement = 'UNIQUE INDEX `' . $this->description->name . '_UNIQUE` (`' . $this->description->name . '` ASC)';
         }
         return $statement;
-        
     }
 }
 ?>
