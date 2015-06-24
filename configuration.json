@@ -11,6 +11,7 @@
         "url_root": "/",
         "assets": "assets"
     },
+    "salt": [2, 3, 5, 7, 8, 13, 14, 20],
     "models": [
         {
             "name": "role",
@@ -58,7 +59,8 @@
                 {
                     "name": "name",
                     "type": "string",
-                    "max_length": 255
+                    "max_length": 255,
+                    "default": "tag_name"
                 }
             ]
         },
@@ -78,7 +80,8 @@
                 },
                 {
                     "name": "created",
-                    "type": "datetime"
+                    "type": "datetime",
+                    "default": "now"
                 },
                 {
                     "name": "edited",
@@ -103,11 +106,12 @@
             "properties": [
                 {
                     "name": "text",
-                    "type": "string"
+                    "type": "string",
                 },
                 {
                     "name": "created",
-                    "type": "datetime"
+                    "type": "datetime",
+                    "default": "now"
                 },
                 {
                     "name": "edited",
@@ -116,7 +120,8 @@
                 },
                 {
                     "name": "accepted",
-                    "type": "bool"
+                    "type": "bool",
+                    "default": false
                 },
                 {
                     "name": "upvotes",
@@ -132,6 +137,5 @@
                 }
             ]
         }
-    ],
-    "salt": [2, 3, 5, 7, 8, 13, 14, 20]
+    ]
 }
