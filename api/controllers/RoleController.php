@@ -1,5 +1,5 @@
 <?php
-class {{model_name}}Controller extends MyController
+class RoleController extends MyController
 {
 
     public function __call($name, $arguments) {
