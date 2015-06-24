@@ -13,6 +13,7 @@ class Property {
 
     public function get_db_column_statement() {
         $line = '`' . $this->description->name . '` ';
+        $default = NULL;
 
         if (is_array($this->description->type)) {
             $line .= 'ENUM(';
@@ -31,21 +32,30 @@ class Property {
                     } else {
                         $line .= "TEXT CHARACTER SET 'utf8'";
                     }
+                    $default = "'" . $this->description->default . "'";
                     break;
                 case 'hash':
                     $line .= "CHAR(40) CHARACTER SET 'utf8'";
                     break;
                 case 'datetime':
                     $line .= 'DATETIME';
+                    $default = "'0000-00-00 00:00:00'";
                     break;
                 case 'int':
                     $line .= 'INT';
+                    $default = $this->description->default;
                     break;
                 case 'float':
                     $line .= 'DOUBLE';
+                    $default = $this->description->default;
                     break;
                 case 'bool':
                     $line .= "TINYINT(1)";
+                    if ($this->description->default == true) {
+                        $default = '1';
+                    } else {
+                        $default = '0';
+                    }
                     break;
                 default:
                     break;
@@ -53,7 +63,9 @@ class Property {
         }
         $line .= $this->is_null() ? '' : ' NOT';
         $line .= ' NULL';
-
+        if (isset($this->description->default)) {
+            $line .= ' DEFAULT ' . $default;
+        }
         return $line;
     }
 
