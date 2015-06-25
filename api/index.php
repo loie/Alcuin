@@ -16,16 +16,14 @@ function apiAutoload ($classname) {
     }
 }
 
-$request = new Request($_SERVER, file_get_contents("php://input"));
-
-echo '<pre>' . print_r($request) . '<pre>';
-
+$request = new Request($_SERVER, ("php://input"));
 
 // route the request to the right place
-$controller_name = ucfirst($url_elements[1]) . 'Controller';
+$controller_name = ucfirst($request->url_elements[1]) . 'Controller';
+echo $controller_name;
 if (class_exists($controller_name)) {
     $controller = new $controller_name();
-    $action_name = strtolower($verb) . 'Action';
+    $action_name = strtolower($verb) . '_action';
     $result = $controller->$action_name();
     print_r($result);
 }
