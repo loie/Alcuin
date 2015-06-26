@@ -1,6 +1,5 @@
 <?php
-class RolesController extends MyController
-{
+class RolesController extends Controller {
 
     public function __call($name, $arguments) {
          $result = $this->{$name}($arguments);
@@ -30,7 +29,7 @@ class RolesController extends MyController
         }
         return $data;
     }
- 
+
     private function post_action($request) {
         // update model
 
@@ -42,7 +41,7 @@ class RolesController extends MyController
 
     private function put_action($request) {
         // create model
-        $model = new {{]}}Model();
+        $model = new RoleModel();
         assert($model != null);
         foreach ($request as $key => $value) {
             $model->{$key} = $value;

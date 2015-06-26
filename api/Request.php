@@ -9,6 +9,8 @@ class Request {
         $this->verb = $srv_var['REQUEST_METHOD'];
         $this->url_elements = explode('/', $srv_var['PATH_INFO']);
 
+        print_r($srv_var);
+
         $this->parse_incoming_params($srv_var['QUERY_STRING'], $request_param_string, $srv_var['CONTENT_TYPE']);
         // initialise json as default format
         $this->format = 'json';
