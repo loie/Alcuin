@@ -1,5 +1,5 @@
 <?php
-class RolesController extends Controller {
+class RolesController {
 
     public function __call($name, $arguments) {
          $result = $this->{$name}($arguments);
@@ -7,7 +7,6 @@ class RolesController extends Controller {
     }
 
     private function get_action($request) {
-
         if(isset($request->url_elements[2])) {
             $user_id = (int)$request->url_elements[2];
             if(isset($request->url_elements[3])) {
@@ -41,7 +40,7 @@ class RolesController extends Controller {
 
     private function put_action($request) {
         // create model
-        $model = new RoleModel();
+        $model = new Role();
         assert($model != null);
         foreach ($request as $key => $value) {
             $model->{$key} = $value;

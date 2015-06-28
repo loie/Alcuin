@@ -19,12 +19,12 @@ function apiAutoload ($classname) {
 $request = new Request($_SERVER, ("php://input"));
 
 // route the request to the right place
-$controller_name = ucfirst($request->url_elements[1]);
-echo $controller_name;
+$controller_name = ucfirst($request->url_elements[1] . 'Controller');
 if (class_exists($controller_name)) {
     $controller = new $controller_name();
-    $action_name = strtolower($verb) . '_action';
+
+    echo $action_name;
+    $action_name = strtolower($request->getVerb()) . '_action';
     $result = $controller->$action_name();
-    print_r($result);
 }
 ?>
