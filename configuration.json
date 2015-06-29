@@ -15,17 +15,39 @@
     "models": [
         {
             "name": "role",
+            "use_for_permission": true,
             "properties": [
                 {
                     "name": "type",
-                    "type": ["user", "moderator", "admin"]
+                    "type": "string",
+                    "max_length": 255
+                }
+            ],
+            "permissions": {
+                "create": "admin",
+                "read": "user",
+                "update": "admin",
+                "delete": "admin"
+            },
+            "instances": [{
+                    "type": "login"
+                }, {
+                    "type": "user"
+                }, {
+                    "type": "admin"
                 }
             ]
         },
         {
             "name": "user",
-            "belongs_to": ["role"],
+            "belongs_to_and_has_many": ["role"],
             "use_as_auth": true,
+            "permissions": {
+                "create": "all",
+                "read": "admin",
+                "update": ["login", "user", "admin"],
+                "delete": "admin"
+            },
             "properties": [
                 {
                     "name": "email",
@@ -55,6 +77,12 @@
         },
         {
             "name": "tag",
+            "permissions": {
+                "create": ["user", "admin"],
+                "read": ["login", "user", "admin"],
+                "update": ["admin"],
+                "delete": ["admin"]
+            },
             "properties": [
                 {
                     "name": "name",
@@ -68,6 +96,12 @@
             "name": "question",
             "belongs_to": ["user"],
             "belongs_to_and_has_many": ["tag"],
+            "permissions": {
+                "create": "user",
+                "read": "all",
+                "update": ["user", "admin"],
+                "delete": "admin"
+            },
             "properties": [
                 {
                     "name": "title",
@@ -103,6 +137,12 @@
                 },
                 "question"
             ],
+            "permissions": {
+                "create": ["user", "admin"],
+                "read": "all",
+                "update": ["user", "admin"],
+                "delete": "admin"
+            },
             "properties": [
                 {
                     "name": "text",
