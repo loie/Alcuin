@@ -25,6 +25,6 @@ if (class_exists($controller_name)) {
 
     echo $action_name;
     $action_name = strtolower($request->getVerb()) . '_action';
-    $result = $controller->$action_name();
+    $result = $controller->$action_name($request);
 }
 ?>

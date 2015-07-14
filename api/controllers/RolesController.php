@@ -1,13 +1,18 @@
 <?php
-class RolesController {
+class RolesController extends Controller {
 
     public function __call($name, $arguments) {
-         $result = $this->{$name}($arguments);
-         $this->show_in_view($result);
+        $result = null;
+        if (sizeof($arguments) > 0) {
+            $result = $this->{$name}($arguments[0]);
+        } else {
+            $result = $this->{$name}($arguments);
+        }
+        $this->show_in_view($result);
     }
 
     private function get_action($request) {
-        if(isset($request->url_elements[2])) {
+        if (isset($request->url_elements[2])) {
             $user_id = (int)$request->url_elements[2];
             if(isset($request->url_elements[3])) {
                 switch($request->url_elements[3]) {
