@@ -82,7 +82,9 @@ class Main {
         // echo '<pre>';
         // print_r($model);
         // echo '</pre>';
-        $query_string = 'CREATE TABLE `' . $this->db_conf->name . '`.`' . $model->name . 's` (';
+
+        $model_name = $model->name . 's';
+        $query_string = 'CREATE TABLE `' . $this->db_conf->name . '`.`' . $model_name . '` (';
         $statements = [];
         $relation_statements = [];
         $index_statements = [];
@@ -131,7 +133,6 @@ class Main {
         // echo '<pre>' . $query_string . '</pre>';
 
         $this->ping($query_string);
-        // $db->exec($query_string);
 
         if (isset($model->belongs_to_and_has_many) && is_array($model->belongs_to_and_has_many)) {
             foreach($model->belongs_to_and_has_many as $relation) {
@@ -144,6 +145,22 @@ class Main {
                 }
                 $relation_model->belongs_to = [$model->name, $relation];
                 $this->create_model_in_db($relation_model);
+            }
+        }
+
+        if (isset($model->instances) && is_array($model->instances)) {
+            foreach ($model->instances as $instance) {
+                $insert_statement = "INSERT INTO " . $model_name . " ({keys}) VALUES ({values})";
+                $names = array();
+                $values = array();
+                foreach (get_object_vars($instance) as $key => $value) {
+                    echo print_r(get_object_vars($instance));
+                    array_push($names, $key);
+                    array_push($values, "'" . $value . "'");
+                    $insert_statement = str_replace('{keys}', implode(',', $names), $insert_statement);
+                    $insert_statement = str_replace('{values}', implode(',', $values), $insert_statement);
+                    $this->db->exec($insert_statement);
+                }
             }
         }
     }
