@@ -115,6 +115,12 @@ class Main {
                 array_push($constraint_statements, 'FOREIGN KEY (`' . $column_name . '`) REFERENCES `' . $this->db_conf->name . '`.`' . $table_name . 's` (`id`) ON DELETE CASCADE ON UPDATE CASCADE');
             }
         }
+        if (isset($model->use_for_auth)) {
+            $line = "`token` CHAR(40) CHARACTER SET 'utf8'";
+            $index_line = 'INDEX `token_INDEX` (`token` ASC)';
+            array_push($statements, $line);
+            array_push($index_statements, $index_line);
+        }
         if (isset($model->properties)) {
             foreach ($model->properties as $property) {
                 $prop = new Property($property);

@@ -1,5 +1,5 @@
 <?php
-class RolesController extends DBController {
+class QuestionsController extends DBController {
 
     public function __call($name, $arguments) {
         parent::__call($name, $arguments);

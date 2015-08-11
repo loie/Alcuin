@@ -41,10 +41,10 @@
         {
             "name": "user",
             "belongs_to_and_has_many": ["role"],
-            "use_as_auth": true,
+            "use_for_auth": true,
             "permissions": {
                 "create": "all",
-                "read": "admin",
+                "read": "all",
                 "update": ["login", "user", "admin"],
                 "delete": "admin"
             },
@@ -54,6 +54,9 @@
                     "type": "string",
                     "max_length": 255,
                     "use_as_id": true,
+                    "permissions": {
+                        "read": "none"
+                    },
                     "validation": "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
                 },
                 {
@@ -62,13 +65,7 @@
                     "use_as_password": true
                 },
                 {
-                    "name": "first_name",
-                    "type": "string",
-                    "max_length": 255,
-                    "null_allowed": true
-                },
-                {
-                    "name": "family_name",
+                    "name": "name",
                     "type": "string",
                     "max_length": 255,
                     "null_allowed": true
