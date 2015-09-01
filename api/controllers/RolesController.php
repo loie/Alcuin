@@ -1,7 +1,7 @@
 <?php
 class RolesController extends DBController {
 
-    private $
+    // private $
 
     public function __call($name, $arguments) {
         parent::__call($name, $arguments);

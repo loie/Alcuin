@@ -78,7 +78,7 @@ class Main {
         $this->db->exec($query);
     }
 
-    private function create_model_in_db($model) {
+    private function create_model_in_db($model, $use_for_permission, $use_for_auth) {
         // echo '<pre>';
         // print_r($model);
         // echo '</pre>';
@@ -115,13 +115,13 @@ class Main {
                 array_push($constraint_statements, 'FOREIGN KEY (`' . $column_name . '`) REFERENCES `' . $this->db_conf->name . '`.`' . $table_name . 's` (`id`) ON DELETE CASCADE ON UPDATE CASCADE');
             }
         }
-        if (isset($model->use_for_auth)) {
+        if ($use_for_auth) {
             $line = "`token` CHAR(40) CHARACTER SET 'utf8'";
             $index_line = 'INDEX `token_INDEX` (`token` ASC)';
             array_push($statements, $line);
             array_push($index_statements, $index_line);
-            $line = "`token_last_updated` DATETIME";
-            $index_line = 'INDEX `token_last_updated_INDEX` (`token_last_updated`, ASC)';
+            $line = "`token_last_updated` DATETIME NULL DEFAULT '0000-00-00 00:00:00'";
+            $index_line = 'INDEX `token_last_updated_INDEX` (`token_last_updated` ASC)';
             array_push($statements, $line);
             array_push($index_statements, $index_line);
         }
@@ -144,6 +144,7 @@ class Main {
 
         $this->ping($query_string);
 
+        // create as_bs table for a->belongs_to_and_has_many(b)
         if (isset($model->belongs_to_and_has_many) && is_array($model->belongs_to_and_has_many)) {
             foreach($model->belongs_to_and_has_many as $relation) {
                 $relation_model = new stdClass();
@@ -154,7 +155,7 @@ class Main {
                     $relation_model->name = $model->name . 's_' . $relation->name;
                 }
                 $relation_model->belongs_to = [$model->name, $relation];
-                $this->create_model_in_db($relation_model);
+                $this->create_model_in_db($relation_model, false, false);
             }
         }
 
@@ -218,13 +219,15 @@ class Main {
                         error($e, 'Could not select new database' . $db_conf->name);
                     }
                     $this->success('Creating models and controllers');
-                    $models = $this->configuration->models;
+                    $models = $this->configuration->architecture->models;
                     assert($models !== null);
                     echo '<ul><li>Models were found in the configuration file&hellip;';
                     foreach ($models as $model) {
                         echo '';
                         $this->success('Creating Table for Model <code>' . $model->name . '</code>');
-                        $this->create_model_in_db($model);
+                        $use_for_permission = $this->configuration->architecture->use_for_auth == $model->name;
+                        $use_for_auth = $this->configuration->architecture->use_for_auth == $model->name;
+                        $this->create_model_in_db($model, $use_for_permission, $use_for_auth);
                         $this->success('Creating PHP classes for Model <code>'. $model->name . '</code>.');
                     }
                     echo '</li>'; // Mddels close
