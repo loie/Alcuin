@@ -120,6 +120,10 @@ class Main {
             $index_line = 'INDEX `token_INDEX` (`token` ASC)';
             array_push($statements, $line);
             array_push($index_statements, $index_line);
+            $line = "`token_last_updated` DATETIME";
+            $index_line = 'INDEX `token_last_updated_INDEX` (`token_last_updated`, ASC)';
+            array_push($statements, $line);
+            array_push($index_statements, $index_line);
         }
         if (isset($model->properties)) {
             foreach ($model->properties as $property) {

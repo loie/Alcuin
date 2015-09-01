@@ -1,7 +1,7 @@
 <?php
 
-class QuestionsModel extends DBModel{
-
+class QuestionsModel extends Model {
+    
 }
 
 ?>

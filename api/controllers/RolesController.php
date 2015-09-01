@@ -1,6 +1,8 @@
 <?php
 class RolesController extends DBController {
 
+    private $
+
     public function __call($name, $arguments) {
         parent::__call($name, $arguments);
         $result = null;
@@ -14,9 +16,9 @@ class RolesController extends DBController {
 
     // perform action for GET
     private function get_action($request) {
-        $stmt = $dbh->prepare("SELECT  INTO REGISTRY (name, value) VALUES (:name, :value)");
-$stmt->bindParam(':name', $name);
-$stmt->bindParam(':value', $value);
+        $stmt = $dbh->prepare("SELECT INTO REGISTRY (name, value) VALUES (:name, :value)");
+        $stmt->bindParam(':name', $name);
+        $stmt->bindParam(':value', $value);
         if (isset($request->url_elements[2])) {
             $user_id = (int)$request->url_elements[2];
             if(isset($request->url_elements[3])) {
