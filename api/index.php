@@ -1,5 +1,8 @@
 <?php
-include 'Request.php';
+include_once 'DB.php';
+include_once 'Request.php';
+include_once 'ORM.php';
+include_once 'Utils.php';
 
 // autoload Models, Views and Controllers
 spl_autoload_register('apiAutoload');
@@ -16,14 +19,12 @@ function apiAutoload ($classname) {
     }
 }
 
-$request = new Request($_SERVER, ("php://input"));
+$request = new Request($_SERVER, file_get_contents("php://input"));
 
 // route the request to the right place
-$controller_name = ucfirst($request->url_elements[1] . 'Controller');
+$controller_name = ucfirst($request->getHandlerName() . 'Controller');
 if (class_exists($controller_name)) {
     $controller = new $controller_name();
-
-    echo $action_name;
     $action_name = strtolower($request->getVerb()) . '_action';
     $result = $controller->$action_name($request);
 }

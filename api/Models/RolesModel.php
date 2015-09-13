@@ -3,7 +3,7 @@
 class RolesModel extends Model {
 
 
-        private static $INFERRED_PERMISSIONS_PROPS;
+    private static $INFERRED_PERMISSIONS_PROPS;
 
     public static function get_inferred_permissions () {
         return RolesModel::$INFERRED_PERMISSIONS_PROPS;

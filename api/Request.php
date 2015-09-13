@@ -1,14 +1,26 @@
 <?php
 
 class Request {
-    public $url_elements;
+    private $url_elements;
+    private $handler_name;
+    private $id;
     private $verb;
     private $parameters;
  
     public function __construct($srv_var, $request_param_string) {
+
         $this->verb = $srv_var['REQUEST_METHOD'];
         $this->url_elements = explode('/', $srv_var['PATH_INFO']);
-
+        $size = sizeof($this->url_elements);
+        if ($size < 2) {
+            throw new Exception ('URL does not seem to fit.');
+        }
+        else {
+            $this->handler_name = $this->url_elements[1];
+            if ($size > 2) {
+                $this->id = $this->url_elements[2];
+            }
+        }
         $this->parse_incoming_params($srv_var['QUERY_STRING'], $request_param_string, $srv_var['CONTENT_TYPE']);
         // initialise json as default format
         $this->format = 'json';
@@ -17,7 +29,7 @@ class Request {
         }
     }
  
-    public function parse_incoming_params($servurl_params, $request__param_string, $content_type_string) {
+    public function parse_incoming_params($servurl_params, $request_param_string, $content_type_string) {
         $parameters = array();
  
         // first of all, pull the GET vars
@@ -51,6 +63,14 @@ class Request {
                 break;
         }
         $this->parameters = $parameters;
+    }
+
+    public function getHandlerName() {
+        return $this->handler_name;
+    }
+
+    public function getId() {
+        return $this->id;
     }
     
     public function getVerb() {
