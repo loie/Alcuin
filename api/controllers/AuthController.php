@@ -1,7 +1,4 @@
 <?php
-
-require 'DB.php';
-
 abstract class AuthController {
 
     private $db_conf;

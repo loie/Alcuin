@@ -3,6 +3,8 @@ include_once 'DB.php';
 include_once 'Request.php';
 include_once 'ORM.php';
 include_once 'Utils.php';
+include_once 'models/Model.php';
+include_once 'controllers/Controller.php';
 
 // autoload Models, Views and Controllers
 spl_autoload_register('apiAutoload');

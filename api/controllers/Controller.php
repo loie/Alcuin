@@ -1,5 +1,4 @@
 <?php
-
 abstract class Controller {
 
     protected static function getSalt() {

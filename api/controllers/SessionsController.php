@@ -1,11 +1,5 @@
 <?php
-require ('Controller.php');
-
 class SessionsController extends Controller {
-
-    private static $TABLE_NAME = 'users';
-    private static $TOKEN_COLUMN_NAME = 'token';
-    private static $TOKEN_LAST_UPDATE_COLUMN_NAME = 'token_last_updated';
 
     protected function get_action($request) {
         return $this->create_error('GET is not supported for sessions. Use POST to create a session.');
@@ -21,17 +15,17 @@ class SessionsController extends Controller {
      *  If not, then create a new one and return that
     */
     protected function post_action($request) {
-        $props = new stdClass();
+        $props = [];
         $token_base = '';
         foreach ($request->getParameters() as $key => $value) {
-            $props->{$key} = $value;
+            $props[$key] = $value;
             $token_base .= $key . '=' . $value . ';';
         }
-        $users = ORM::retrieve(self::$TABLE_NAME, $props);
+        $sessions = ORM::retrieve('sessions', $props);
         $session = null;
-        if (sizeof($users) === 1) {
-            $user_session = $users[0];
-            if ($user_session->{self::$TOKEN_COLUMN_NAME} === NULL) {
+        if (sizeof($sessions) === 1) {
+            $session = $sessions[0];
+            if ($session->token === NULL) {
                 // update the token
                 $token_base .= microtime();
                 $token_length = strlen($token_base);
@@ -40,16 +34,12 @@ class SessionsController extends Controller {
                         $token_base .= substr($token_base, $index, 1);
                     }
                 }
-                $user_session->{self::$TOKEN_COLUMN_NAME} = sha1($token_base);
+                $session->token = sha1($token_base);
             }
             // update the user token
-            $user_ession->{self::$TOKEN_LAST_UPDATE_COLUMN_NAME} = Utils::getNow();
-            ORM::save($user_session);
-
-            // trim for return
-            $session = new stdClass();
-            $session->{self::$TOKEN_COLUMN_NAME} = $user_session->{self::$TOKEN_COLUMN_NAME};
-            $session->{self::$TOKEN_LAST_UPDATE_COLUMN_NAME} = $user_session->{self::$TOKEN_LAST_UPDATE_COLUMN_NAME};
+            $session->token_last_updated = Utils::getNow();
+            ORM::save($session);
+            return $session;
         } else {
             throw new Exception('Could not assign the session to the given request.');
         }
