@@ -21,15 +21,21 @@ class SessionsController extends Controller {
             $props[$key] = $value;
             $token_base .= $key . '=' . $value . ';';
         }
-        $sessions = ORM::retrieve('sessions', $props);
         $session = null;
+        $conf = [
+            'name' => 'sessions',
+            'properties' => $props,
+            'with_relations' => true,
+            'force' => true
+        ];
+        $sessions = ORM::retrieve($conf);
         if (sizeof($sessions) === 1) {
             $session = $sessions[0];
             if ($session->token === NULL) {
                 // update the token
                 $token_base .= microtime();
                 $token_length = strlen($token_base);
-                foreach (base::getSalt() as $index) {
+                foreach (parent::getSalt() as $index) {
                     if ($index < $token_length) {
                         $token_base .= substr($token_base, $index, 1);
                     }
@@ -37,7 +43,7 @@ class SessionsController extends Controller {
                 $session->token = sha1($token_base);
             }
             // update the user token
-            $session->token_last_updated = Utils::getNow();
+            $session->token_last_updated = Helpers::getNow();
             ORM::save($session);
             return $session;
         } else {

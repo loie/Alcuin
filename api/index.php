@@ -2,7 +2,9 @@
 include_once 'DB.php';
 include_once 'Request.php';
 include_once 'ORM.php';
-include_once 'Utils.php';
+include_once 'utils/Helpers.php';
+include_once 'utils/Access.php';
+include_once 'utils/Permissions.php';
 include_once 'models/Model.php';
 include_once 'controllers/Controller.php';
 
@@ -20,7 +22,6 @@ function apiAutoload ($classname) {
         return true;
     }
 }
-
 $request = new Request($_SERVER, file_get_contents("php://input"));
 
 // route the request to the right place

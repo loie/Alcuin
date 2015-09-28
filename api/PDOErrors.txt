@@ -1,0 +1,1 @@
+SQLSTATE[21000]: Cardinality violation: 1241 Operand should contain 1 column(s)
