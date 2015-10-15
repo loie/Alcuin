@@ -2,25 +2,23 @@
 include_once 'DB.php';
 include_once 'Request.php';
 include_once 'ORM.php';
-include_once 'utils/Helpers.php';
 include_once 'utils/Access.php';
 include_once 'utils/Permissions.php';
+include_once 'utils/Helpers.php';
 include_once 'models/Model.php';
 include_once 'controllers/Controller.php';
 
 // autoload Models, Views and Controllers
 spl_autoload_register('apiAutoload');
 function apiAutoload ($classname) {
-    if (preg_match('/[a-zA-Z]+Controller$/', $classname)) {
-        include __DIR__ . '/controllers/' . $classname . '.php';
-        return true;
-    } elseif (preg_match('/[a-zA-Z]+Model$/', $classname)) {
-        include __DIR__ . '/models/' . $classname . '.php';
-        return true;
-    } elseif (preg_match('/[a-zA-Z]+View$/', $classname)) {
-        include __DIR__ . '/views/' . $classname . '.php';
-        return true;
+    foreach (Helpers::getDirMapping() as $class_regex => $dir_name) {
+        if (preg_match($class_regex, $classname) &&
+            file_exists(__DIR__ . $dir_name . $classname . '.php')) {
+            include __DIR__ . $dir_name . $classname . '.php';
+            return true;
+        }
     }
+    return false;
 }
 $request = new Request($_SERVER, file_get_contents("php://input"));
 

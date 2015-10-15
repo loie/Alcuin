@@ -6,6 +6,10 @@ class SessionsModel extends Model {
         return 'users';
     }
 
+    public static function get_id_column_name () {
+        return 'user';
+    }
+
     protected static function get_all_properties () {
         return ['id', 'token', 'token_last_updated'];
     }
@@ -18,7 +22,11 @@ class SessionsModel extends Model {
     }
     public static function get_belongs_to_and_has_many () {
         $relations_json = '[
-            "roles": "users_roles"
+            {
+                "name": "role",
+                "model": "role",
+                "via_table": "users_roles"
+            }
         ]';
 
         $relations = json_decode($relations_json);

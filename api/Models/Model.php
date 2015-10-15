@@ -5,6 +5,7 @@ abstract class Model {
 
     abstract protected static function get_permission_table();
     abstract public static function get_table_name ();
+    abstract public static function get_id_column_name ();
     abstract protected static function get_all_properties ();
     abstract public static function get_belongs_to ();
     abstract public static function get_has_many ();
@@ -23,6 +24,9 @@ abstract class Model {
                     $permissions = $permission_property->{$access_type};
                     $is_allowed = static::check_permission($permissions, $user_permissions);
                     break;
+                }
+                if ($is_allowed && $property === 'id' && ($access_type === Access::UPDATE || $access_type === Access::CREATE)) {
+                    $is_allowed = false;
                 }
             }
             if ($is_allowed) {

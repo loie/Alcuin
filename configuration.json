@@ -27,7 +27,7 @@
                 ],
                 "permissions": {
                     "create": "admin",
-                    "read": "admin",
+                    "read": "all",
                     "update": "admin",
                     "delete": "admin"
                 },

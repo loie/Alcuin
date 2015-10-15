@@ -1,6 +1,6 @@
 <?php
 
-class Permission {
+class Permissions {
     const ALL =  'all';
     const NONE = 'none';
     const PERMISSION_TABLE_NAME = 'roles';

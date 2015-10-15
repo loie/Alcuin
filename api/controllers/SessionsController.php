@@ -31,6 +31,12 @@ class SessionsController extends Controller {
         $sessions = ORM::retrieve($conf);
         if (sizeof($sessions) === 1) {
             $session = $sessions[0];
+            $roles = $session->relations->belongs_to_and_has_many['roles'];
+            $_SESSION['permissions'] = [];
+            foreach ($roles as $role) {
+                // var_dump($role);
+                array_push($_SESSION['permissions'], $role->type);
+            }
             if ($session->token === NULL) {
                 // update the token
                 $token_base .= microtime();

@@ -2,30 +2,50 @@
 
 class RolesModel extends Model {
 
-
-    private static $INFERRED_PERMISSIONS_PROPS;
-
-    public static function get_inferred_permissions () {
-        return RolesModel::$INFERRED_PERMISSIONS_PROPS;
+public static function get_table_name () {
+        return 'roles';
     }
 
-    protected static function set_inferred_permissions ($map) {
-        Model::$INFERRED_PERMISSIONS_PROPS = $map;
+    public static function get_id_column_name () {
+        return 'role';
     }
 
-    static {
-        $map = [
-            "all" => [],
-            "admin" => [
-                "create" => ["name"],
-                "read" => ["name"],
-                "update" => ["name"],
-                "delete" => ["name"],
-            ],
-            "user" => [],
-            "login" => []
-        ];
-        $self::set_inferred_permissions($map);
+    protected static function get_all_properties () {
+        return ['id', 'type'];
+    }
+
+    public static function get_belongs_to () {
+        return NULL;
+    }
+    public static function get_has_many () {
+        return NULL;
+    }
+    public static function get_belongs_to_and_has_many () {
+        $relations_json = '[
+            {
+                "name": "user",
+                "model": "user",
+                "via_table": "users_roles"
+            }
+        ]';
+
+        $relations = json_decode($relations_json);
+        return $relations;
+    }
+
+    protected static function get_permission_table () {
+        if (static::$PERMISSIONS_TABLE == NULL) {
+            $permission_table = '{
+                "general": {
+                    "create": "admin",
+                    "read": "all",
+                    "update": "admin",
+                    "delete": "admin"
+                }
+            }';
+            static::$PERMISSIONS_TABLE = json_decode($permission_table);
+        }
+        return static::$PERMISSIONS_TABLE;
     }
 }
 
