@@ -18,9 +18,15 @@ class SessionsController extends Controller {
         $props = [];
         $token_base = '';
         foreach ($request->getParameters() as $key => $value) {
-            $props[$key] = $value;
+            if ($key === 'password') {
+                $hashed_value = Helpers::hash($value);
+                $props[$key] = $hashed_value;
+            } else {
+                $props[$key] = $value;
+            }
             $token_base .= $key . '=' . $value . ';';
         }
+
         $session = null;
         $conf = [
             'name' => 'sessions',
@@ -53,7 +59,7 @@ class SessionsController extends Controller {
             ORM::save($session);
             return $session;
         } else {
-            throw new Exception('Could not assign the session to the given request.');
+            throw new HTTPStatusException(403, 'Could not assign the session to the given request.');
         }
 
         return $session;

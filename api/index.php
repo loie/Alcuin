@@ -5,6 +5,7 @@ include_once 'ORM.php';
 include_once 'utils/Access.php';
 include_once 'utils/Permissions.php';
 include_once 'utils/Helpers.php';
+include_once 'utlils/HTTPStatusException.php';
 include_once 'models/Model.php';
 include_once 'controllers/Controller.php';
 
