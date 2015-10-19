@@ -21,3 +21,17 @@ There are only a few simple steps to take:
 3. Upload the repository (including the edited `configuration.json`) to your webspace.
 4. Execute `index.php` on your webspace
 5. Have a beer and enjoy life. You have just setup a fully working REST service. You're awesome!
+
+
+##User Guide
+###Permissions:
+
+Alcuin handles user authorization by roles. A role is saved as a row in the tbale, which is specified to be used for permissions. You can specify the roles to be used in your system by defining a table, in addition with the use_for_permission: true statement. If you want, you can also specify pre-filled values by {instances}.
+
+Alcuin will create your PHP code in such manner, that it will expect the strings you specified to either grant or deny access to that specific resource.
+
+In addition to the specified roles in the tabe used for permission, alcuin uses the following labels for different kind of authorization
+
+"all": Everybody with a browser or cURL or the ability to send web requests has access.
+"none": Nobody has access.
+"self": If the resource is associated to the "user" (which is an entry in the table, that is specified with "use_for_auth" via either "belongs_to", "has_many" or "belongs_to_and_has_many" relations, then the currently authenticated "user" has access to this ressource
