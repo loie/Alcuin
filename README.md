@@ -34,4 +34,4 @@ In addition to the specified roles in the tabe used for permission, alcuin uses 
 
 "all": Everybody with a browser or cURL or the ability to send web requests has access.
 "none": Nobody has access.
-"self": If the resource is associated to the "user" (which is an entry in the table, that is specified with "use_for_auth" via either "belongs_to", "has_many" or "belongs_to_and_has_many" relations, then the currently authenticated "user" has access to this ressource
+"self": If the resource is associated to the "user" (which is an entry in the table, that is specified with "use_for_auth" via either "belongs_to", "has_many" or "belongs_to_and_has_many" relations, then the currently authenticated "user" has access to this ressource. If method "create" is chosen, "self" is forbidden, because the newy created resource is not related to the logged in user, but will be created in that way.
