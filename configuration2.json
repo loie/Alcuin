@@ -15,55 +15,45 @@
     "architecture": {
         "use_for_permission": "role",
         "use_for_auth": "user",
-        "use_soft_delete": true,
-        "models": {
-            "role": {
-                "name_plural": "roles",
-                "properties": {
-                    "type": {
+        "models": [
+            {
+                "name": "role",
+                "properties": [
+                    {
+                        "name": "type",
                         "type": "string",
                         "max_length": 255
                     }
-                },
-                "relations": {
-                    "users": {
-                        "model": "user",
-                        "type": "belongs_to_and_has_many",
-                        "via_table": "users_roles"
-                    }
-                },
+                ],
                 "permissions": {
-                    "entity": {
-                        "create": ["admin"],
-                        "read": ["self", "admin"],
-                        "update": ["admin"],
-                        "delete": ["admin"]
-                    },
-                    "relations": {
-                        "users": {
-                            "create": ["admin"],
-                            "read": ["self", "admin"],
-                            "update": ["admin"],
-                            "delete": ["admin"]
-                        }
-                    },
-                    "properties": {
-                        "global": {
-                            "read": ["self", "admin"],
-                            "update": ["admin"]
-                        }
-                    }    
+                    "create": "admin",
+                    "read": ["self", "admin"],
+                    "update": "admin",
+                    "delete": "admin"
                 },
-                "instances": [
-                    {
+                "instances": [{
                         "type": "user"
-                    }, {
-                        "type": "admin"
                     }
                 ]
             },
-            "user": {
-                "name_plural": "users",
+            {
+                "name": "user",
+                "belongs_to_and_has_many": [
+                    {
+                        "name": "role",
+                        "permissions": {
+                            "create": "admin",
+                            "read": ["self", "admin"],
+                            "delete": "admin"
+                        }
+                    }
+                ],
+                "permissions": {
+                    "create": "all",
+                    "read": "all",
+                    "update": ["self", "admin"],
+                    "delete": ["self", "admin"]
+                },
                 "properties": [
                     {
                         "name": "email",
@@ -86,76 +76,16 @@
                         "max_length": 255,
                         "null_allowed": true
                     }
-                ],
-                "relations": [
-                    {
-                        "name": "roles",
-                        "model": "role",
-                        "type": "belongs_to_and_has_many",
-                        "via_table": "users_roles"
-                    },
-                    {
-                        "name": "questions",
-                        "model": "question",
-                        "type": "has_many"
-                    },
-                    {
-                        "name": "answers",
-                        "model": "answer",
-                        "type": "has_many"
-                    }
-                ],
-                "permissions": {
-                    "entity": {
-                        "create": ["all"],
-                        "read": ["self", "admin"],
-                        "update": ["self", "admin"],
-                        "delete": ["self", "admin"]
-                    },
-                    "relations": [
-                        {
-                            "name": "roles",
-                            "create": ["admin"],
-                            "read": ["self", "admin"],
-                            "update": ["admin"],
-                            "delete": ["self", "admin"]
-                        }, {
-                            "name": "question",
-                            "create": ["self", "admin"],
-                            "read": ["all"],
-                            "update": ["self", "admin"],
-                        }, {
-                            "name": "answer",
-                            "create": ["self", "admin"],
-                            "read": ["all"],
-                            "update": ["self", "admin"],
-                            "delete": ["self", "admin"]
-                        }
-                    ],
-                    "properties": {
-                        "global": {
-                            "read": ["all"],
-                            "update": ["self", "admin"]
-                        },
-                        "columns": [
-                            {
-                                "name": "email",
-                                "read": ["self"]
-                            },
-                            {
-                                "name": "password",
-                                "read": ["none"]
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-            {
+                ]
             },
             {
                 "name": "tag",
-                "name_plural": "tags",
+                "permissions": {
+                    "create": ["user", "admin"],
+                    "read": ["user", "admin"],
+                    "update": "admin",
+                    "delete": "admin"
+                },
                 "properties": [
                     {
                         "name": "name",
@@ -163,22 +93,7 @@
                         "max_length": 255,
                         "default": "tag_name"
                     }
-                ],
-                "permissions": {
-                    "entity": {
-                        "create": [],
-                        "read": [],
-                        "update": [],
-                        "delete": []
-                    },
-                    "relations": [],
-                    "properties": {
-                        "global": {
-                            "read": [],
-                            "update": []
-                        }
-                    }
-                }
+                ]
             },
             {
                 "name": "question",
