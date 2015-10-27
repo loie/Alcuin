@@ -19,40 +19,35 @@
         "models": {
             "role": {
                 "name_plural": "roles",
+                "permissions": {
+                    "create": "admin",
+                    "read": ["self", "admin"],
+                    "update": "admin",
+                    "delete": "admin"
+                },
                 "properties": {
-                    "type": {
-                        "type": "string",
-                        "max_length": 255
+                    "permissions": {
+                        "read": ["self", "admin"],
+                        "update": "admin"
+                    },
+                    "list": {
+                        "type": {
+                            "type": "string",
+                            "max_length": 255
+                        }
                     }
                 },
                 "relations": {
                     "users": {
                         "model": "user",
                         "type": "belongs_to_and_has_many",
-                        "via_table": "users_roles"
+                        "via_table": "users_roles",
+                        "permissions": {
+                            "create": "admin",
+                            "read": ["self", "admin"],
+                            "delete": "admin"
+                        }
                     }
-                },
-                "permissions": {
-                    "entity": {
-                        "create": ["admin"],
-                        "read": ["self", "admin"],
-                        "update": ["admin"],
-                        "delete": ["admin"]
-                    },
-                    "relations": {
-                        "users": {
-                            "create": ["admin"],
-                            "read": ["self", "admin"],
-                            "update": ["admin"],
-                            "delete": ["admin"]
-                        }
-                    },
-                    "properties": {
-                        "global": {
-                            "read": ["self", "admin"],
-                            "update": ["admin"]
-                        }
-                    }    
                 },
                 "instances": [
                     {
@@ -64,215 +59,240 @@
             },
             "user": {
                 "name_plural": "users",
-                "properties": [
-                    {
-                        "name": "email",
-                        "type": "string",
-                        "max_length": 255,
-                        "use_as_id": true,
-                        "permissions": {
-                            "read": "none"
-                        },
-                        "validation": "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
-                    },
-                    {
-                        "name": "password",
-                        "type": "hash",
-                        "use_as_password": true
-                    },
-                    {
-                        "name": "name",
-                        "type": "string",
-                        "max_length": 255,
-                        "null_allowed": true
-                    }
-                ],
-                "relations": [
-                    {
-                        "name": "roles",
-                        "model": "role",
-                        "type": "belongs_to_and_has_many",
-                        "via_table": "users_roles"
-                    },
-                    {
-                        "name": "questions",
-                        "model": "question",
-                        "type": "has_many"
-                    },
-                    {
-                        "name": "answers",
-                        "model": "answer",
-                        "type": "has_many"
-                    }
-                ],
                 "permissions": {
-                    "entity": {
-                        "create": ["all"],
+                        "create": "all",
                         "read": ["self", "admin"],
                         "update": ["self", "admin"],
                         "delete": ["self", "admin"]
-                    },
-                    "relations": [
-                        {
-                            "name": "roles",
-                            "create": ["admin"],
-                            "read": ["self", "admin"],
-                            "update": ["admin"],
-                            "delete": ["self", "admin"]
-                        }, {
-                            "name": "question",
-                            "create": ["self", "admin"],
-                            "read": ["all"],
-                            "update": ["self", "admin"],
-                        }, {
-                            "name": "answer",
-                            "create": ["self", "admin"],
-                            "read": ["all"],
-                            "update": ["self", "admin"],
-                            "delete": ["self", "admin"]
-                        }
-                    ],
-                    "properties": {
-                        "global": {
-                            "read": ["all"],
-                            "update": ["self", "admin"]
-                        },
-                        "columns": [
-                            {
-                                "name": "email",
-                                "read": ["self"]
-                            },
-                            {
-                                "name": "password",
-                                "read": ["none"]
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-            {
-            },
-            {
-                "name": "tag",
-                "name_plural": "tags",
-                "properties": [
-                    {
-                        "name": "name",
-                        "type": "string",
-                        "max_length": 255,
-                        "default": "tag_name"
-                    }
-                ],
-                "permissions": {
-                    "entity": {
-                        "create": [],
-                        "read": [],
-                        "update": [],
-                        "delete": []
-                    },
-                    "relations": [],
-                    "properties": {
-                        "global": {
-                            "read": [],
-                            "update": []
-                        }
-                    }
-                }
-            },
-            {
-                "name": "question",
-                "belongs_to": {
-                    "name": "user",
-                    "permissions": {
-                        "create": "",
-                        "read": "all",
-                        "delete": "none"
-                    }
-                "belongs_to_and_has_many": ["tag"],
-                "permissions": {
-                    "create": "user",
-                    "read": "all",
-                    "update": ["user", "admin"],
-                    "delete": "admin"
                 },
-                "properties": [
-                    {
-                        "name": "title",
-                        "type": "string",
-                        "max_length": 255
+                "properties": {
+                    "permissions": {
+                        "read": "all",
+                        "update": ["self", "admin"]
                     },
-                    {
-                        "name": "text",
-                        "type": "string"
-                    },
-                    {
-                        "name": "created",
-                        "type": "datetime",
-                        "default": "now",
-                        "update": false
-                    },
-                    {
-                        "name": "edited",
-                        "type": "datetime",
-                        "null_allowed": true
+                    "list": {
+                        "email": {
+                            "type": "string",
+                            "max_length": 255,
+                            "use_as_id": true,
+                            "validation": "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+                        },
+                        "password": {
+                            "type": "hash",
+                            "use_as_password": true,
+                            "permissions": {
+                                "read": "none"
+                            }
+                        },
+                        "name": {
+                            "type": "string",
+                            "max_length": 255,
+                            "null_allowed": true
+                        }
                     }
-                ]
+                },
+                "relations": {
+                    "roles": {
+                        "model": "role",
+                        "type": "belongs_to_and_has_many",
+                        "via_table": "users_roles",
+                        "permissions": {
+                            "create": "admin",
+                            "read": ["self", "admin"],
+                            "delete": "admin"
+                        }
+                    },
+                    "questions": {
+                        "model": "question",
+                        "type": "has_many",
+                        "permissions": {
+                            "create": ["self", "admin"],
+                            "read": "all",
+                            "update": ["self", "admin"],
+                            "delete": "none"
+                        }
+                    },
+                    "answers": {
+                        "model": "answer",
+                        "type": "has_many",
+                        "permissions": {
+                            "create": ["self", "admin"],
+                            "read": "all",
+                            "update": ["self", "admin"],
+                            "delete": "none"
+                        }
+                    },
+                }
             },
-            {
-                "name": "answer",
-                "belongs_to": [
-                    {
-                        "name": "author",
-                        "model": "user"
-                    },
-                    {
-                        "name": "editor",
-                        "model": "user"
-                    },
-                    "question"
-                ],
+            "tag": {
+                "name_plural": "tags",
                 "permissions": {
                     "create": ["user", "admin"],
                     "read": "all",
-                    "update": ["user", "admin"],
+                    "update": "admin",
                     "delete": "admin"
                 },
-                "properties": [
-                    {
-                        "name": "text",
-                        "type": "string"
+                "properties": {
+                    "permissions": {
+                        "read": "all",
+                        "update": "admin"
                     },
-                    {
-                        "name": "created",
-                        "type": "datetime",
-                        "default": "now"
-                    },
-                    {
-                        "name": "edited",
-                        "type": "datetime",
-                        "null_allowed": true
-                    },
-                    {
-                        "name": "accepted",
-                        "type": "bool",
-                        "default": false
-                    },
-                    {
-                        "name": "upvotes",
-                        "type": "int"
-                    },
-                    {
-                        "name": "downvotes",
-                        "type": "int"
-                    },
-                    {
-                        "name": "dummy",
-                        "type": "float"
+                    "list": {
+                        "name": {
+                            "type": "string",
+                            "max_length": 255,
+                            "default": "tag_name"
+                        }
                     }
-                ]
+                },
+                "relations": {
+                    "questions": {
+                        "model": "question",
+                        "type": "belongs_to_and_has_many",
+                        "via_table": "questions_tags",
+                        "permissions": {
+                            "create": ["user", "admin"],
+                            "read": "all",
+                            "delete": "admin"
+                        }
+                    },
+                }
+            },
+            "question": {
+                "name_plural": "questions",
+                "permissions": {
+                    "create": ["user", "admin"],
+                    "read": ["user", "admin"],
+                    "update": ["user", "admin"],
+                    "delete": ["self", "admin"]
+                },
+                "properties": {
+                    "permissions": {
+                        "read": "all",
+                        "update": ["user", "admin"]
+                    },
+                    "list": {
+                        "title": {
+                            "type": "string",
+                            "max_length": 255
+                        },
+                        "text": {
+                            "type": "string"
+                        },
+                        "upvotes": {
+                            "type": "int"
+                        },
+                        "created": {
+                            "type": "datetime",
+                            "default": "now",
+                            "permissions": {
+                                "update": "none"
+                            }
+                        },
+                        "edited": {
+                            "type": "datetime",
+                            "default": "now",
+                            "null_allowed": true
+                        }
+                    }
+                },
+                "relations": {
+                    "user": {
+                        "model": "user",
+                        "type": "belongs_to",
+                        "permissions": {
+                            "create": ["user", "admin"],
+                            "read": "all",
+                            "delete": ["self", "admin"]
+                        }
+                    },
+                    "tags": {
+                        "model": "tag",
+                        "type": "belongs_to_and_has_many",
+                        "via_table": "questions_tags",
+                        "permissions": {
+                            "create": ["user", "admin"],
+                            "read": "all",
+                            "delete": ["self", "admin"]
+                        }
+                    },
+                    "answers": {
+                        "model": "answer",
+                        "type": "belongs_to_and_has_many",
+                        "via_table": "questions_answers",
+                        "permissions": {
+                            "create": ["user", "admin"],
+                            "read": "all",
+                            "delete": ["self", "admin"]
+                        }
+                    }
+                }
+            },
+            "answer": {
+                "name_plural": "answers",
+                "permissions": {
+                    "create": ["user", "admin"],
+                    "read": ["user", "admin"],
+                    "update": ["user", "admin"],
+                    "delete": ["self", "admin"]
+                },
+                "properties": {
+                    "permissions": {
+                        "read": "all",
+                        "update": ["user", "admin"]
+                    },
+                    "list": {
+                        "text": {
+                            "type": "string"
+                        },
+                        "created": {
+                            "type": "datetime",
+                            "default": "now",
+                            "permissions": {
+                                "update": "none"
+                            }
+                        },
+                        "edited": {
+                            "type": "datetime",
+                            "null_allowed": true
+                        },
+                        "accepted": {
+                            "type": "bool",
+                            "default": false
+                        },
+                        "upvotes": {
+                            "type": "int"
+                        },
+                        "downvotes": {
+                            "type": "int"
+                        },
+                        "dummy": {
+                            "type": "float"
+                        }
+                    },
+                },
+                "relations": {
+                    "user": {
+                        "model": "user",
+                        "type": "belongs_to",
+                        "permissions": {
+                            "create": ["user", "admin"],
+                            "read": "all",
+                            "delete": ["self", "admin"]
+                        }
+                    },
+                    "questions": {
+                        "model": "question",
+                        "type": "belongs_to_and_has_many",
+                        "via_table": "questions_answers",
+                        "permissions": {
+                            "create": ["user", "admin"],
+                            "read": "all",
+                            "delete": ["self", "admin"]
+                        }
+                    }
+                }
             }
-        ]
-        
+        }        
     }
 }
