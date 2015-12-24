@@ -11,7 +11,7 @@
         "url_root": "/",
         "assets": "assets"
     },
-    "salt": [2, 3, 5, 7, 8, 13, 14, 20],
+    "salt": [2, 3, 4, 7, 9, 10, 13, 19, 20],
     "architecture": {
         "use_for_permission": "role",
         "use_for_auth": "user",
@@ -20,15 +20,15 @@
             "role": {
                 "name_plural": "roles",
                 "permissions": {
-                    "create": "admin",
-                    "read": ["self", "admin"],
-                    "update": "admin",
-                    "delete": "admin"
+                    "create": "none",
+                    "read": "self",
+                    "update": "none",
+                    "delete": "none"
                 },
                 "properties": {
                     "permissions": {
-                        "read": ["self", "admin"],
-                        "update": "admin"
+                        "read": "self",
+                        "update": "none"
                     },
                     "list": {
                         "type": {
@@ -52,8 +52,6 @@
                 "instances": [
                     {
                         "type": "user"
-                    }, {
-                        "type": "admin"
                     }
                 ]
             },
@@ -61,14 +59,14 @@
                 "name_plural": "users",
                 "permissions": {
                         "create": "all",
-                        "read": ["self", "user", "admin"],
-                        "update": ["self", "admin"],
-                        "delete": ["self", "admin"]
+                        "read": ["self", "user"],
+                        "update": "self",
+                        "delete": "self"
                 },
                 "properties": {
                     "permissions": {
-                        "read": "all",
-                        "update": ["self", "admin"]
+                        "read": "self",
+                        "update": "self"
                     },
                     "list": {
                         "email": {
@@ -87,7 +85,35 @@
                         "name": {
                             "type": "string",
                             "max_length": 255,
+                            "null_allowed": true,
+                            "permissions": "all"
+                        },
+                        "image_set": {
+                            "type": "bool",
+                            "default": false,
+                            "permissions": {
+                                "read": "all"
+                            }
+                        },
+                        "position": {
+                            "type": "geo",
                             "null_allowed": true
+                        },
+                        "timezone": {
+                            "type": "string",
+                            "max_length": "100",
+                            "default": "Europe/London",
+                            "permissions": {
+                                "read"
+                            }
+                        },
+                        "member_since": {
+                            "type": "datetime",
+                            "default": "now",
+                            "permissions": {
+                                "read": "self",
+                                "update": "none"
+                            }
                         }
                     }
                 },
@@ -97,45 +123,42 @@
                         "type": "belongs_to_and_has_many",
                         "via_table": "users_roles",
                         "permissions": {
-                            "create": "admin",
-                            "read": ["self", "admin"],
-                            "delete": "admin"
+                            "create": "user",
+                            "read": "self",
+                            "delete": "self"
                         }
                     },
-                    "questions": {
-                        "model": "question",
+                    "aors": {
+                        "model": "aor",
                         "type": "has_many",
                         "permissions": {
-                            "create": ["self", "admin"],
-                            "read": "all",
-                            "update": ["self", "admin"],
-                            "delete": "none"
+                            "ceate": "self",
+                            "read": "self",
+                            "delete": "self"
                         }
                     },
-                    "answers": {
-                        "model": "answer",
-                        "type": "has_many",
-                        "permissions": {
-                            "create": ["self", "admin"],
-                            "read": "all",
-                            "update": ["self", "admin"],
-                            "delete": "none"
-                        }
+                    "contacts": {
+                        "model": "contact"    
                     },
+                    "contexts": {},
+                    "projects": {},
+                    "actions": {},
+                    "references": {},
+                    "reference_lists": {}
                 }
             },
-            "tag": {
-                "name_plural": "tags",
+            "aor": {
+                "name_plural": "aors",
                 "permissions": {
-                    "create": ["user", "admin"],
-                    "read": "all",
-                    "update": "admin",
-                    "delete": "admin"
+                    "create": ,
+                    "read": ,
+                    "update": ,
+                    "delete": 
                 },
                 "properties": {
                     "permissions": {
-                        "read": "all",
-                        "update": "admin"
+                        "read": ,
+                        "update": 
                     },
                     "list": {
                         "name": {
@@ -158,7 +181,8 @@
                     },
                 }
             },
-            "question": {
+            "contact": {},
+            "context": {
                 "name_plural": "questions",
                 "permissions": {
                     "create": ["user", "admin"],
@@ -228,7 +252,7 @@
                     }
                 }
             },
-            "answer": {
+            "action": {
                 "name_plural": "answers",
                 "permissions": {
                     "create": ["user", "admin"],
@@ -292,7 +316,9 @@
                         }
                     }
                 }
-            }
+            },
+            "project": {}
+
         }        
     }
 }

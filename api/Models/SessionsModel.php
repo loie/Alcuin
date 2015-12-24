@@ -25,7 +25,7 @@ class SessionsModel extends Model {
             {
                 "name": "role",
                 "model": "role",
-                "via_table": "users_roles"
+                "via_table": "users_roles",
             }
         ]';
 
@@ -39,17 +39,17 @@ class SessionsModel extends Model {
                 "general": {
                     "create": "login",
                     "read": "all",
-                    "update": ["login", "admin"],
-                    "delete": ["login", "admin"]
+                    "update": ["self", admin"],
+                    "delete": ["self", "admin"]
                 },
                 "properties": [{
                     "name": "token",
-                    "read": ["login", "admin"],
-                    "update": ["login", "admin"]
+                    "read": ["self", "admin"],
+                    "update": ["self", "admin"]
                 }, {
                     "name": "token_last_updated",
-                    "read": ["login", "admin"],
-                    "update": ["admin", "login"]
+                    "read": ["self", "admin"],
+                    "update": ["admin", "self"]
                 }]
             }';
             static::$PERMISSIONS_TABLE = json_decode($permission_table);
