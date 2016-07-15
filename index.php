@@ -3,7 +3,7 @@ include 'includes/Configuration.php';
 include 'includes/Property.php';
 include 'includes/Main.php';
 
-$config_file = 'configuration.json';
+$config_file = 'configuration.yaml';
 
 echo '<!DOCTYPE html>
             <head>

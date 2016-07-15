@@ -5,10 +5,9 @@ Alcuin creates the database schema and the corresponding PHP classes to provide 
 All it needs, is a JSON configuration file and a working PHP environment with a MySQL database.
 
 ###What can Alcuin do fo you?
-You want a REST API? You don't like thinking about foreign key constraints in your DB? You don't like 
-Facing the problem, that you want an easy way to create a REST service, with user authentification but the initial inertia is too big, so that you use full-stack web application frameworks like Codeigniter. And other, also great frameworks like Laravel need the command like to be installed. But you don't have access to the command line, because you use a simple hosting service.
+You want a REST API? You don't like thinking about foreign key constraints in your DB? You don't like facing the problem, that you want an easy way to create a REST service, with user authentification but the initial inertia is too big, so that you use full-stack web application frameworks like Codeigniter. And other, also great frameworks like Laravel need the command like to be installed. But you don't have access to the command line, because you use a simple hosting service.
 
-This is, where Alcuin steps in and saves the day.
+This is the point where Alcuin steps in and saves the day.
 
 Alcuin creates a REST service for you, without having to fiddle around with command lines statements and works without much technological dependencies.
 
