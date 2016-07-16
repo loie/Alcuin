@@ -11,11 +11,11 @@ class Configuration {
     
     private function load_config ($file) {
         assert(file_exists($file));
-        $json = file_get_contents($file);
-        $this->configuration = json_decode($json);
+        $yaml = file_get_contents($file);
+        $this->configuration = yaml_parse($yaml);
         if ($this->configuration == null) {
             $this->configuration = null;
-            throw new Exception($file . 'is not a valid JSON file');
+            throw new Exception($file . 'is not a valid yaml file');
         }
         assert(get_class($this->configuration) === 'stdClass');
         if ($this->configuration->models !== null) {

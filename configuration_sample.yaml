@@ -13,7 +13,6 @@ salt: [2, 3, 5, 7, 8, 13, 14, 20]
 architecture:
     use_for_permission: role
     use_for_auth: user
-    use_soft_delete: true
     models:
         - role:
             name_plural: roles

@@ -1,3 +1,14 @@
+---
+drop_old_db: true
+db:
+    host: localhost
+    name: test
+    user: root
+    password: bernie
+    
+...
+
+
 {
     "drop_old_db": true,
     "db": {
