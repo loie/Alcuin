@@ -2,10 +2,10 @@
 
 class Main {
 
-    private $db = NULL;
-    private $db_conf = NULL;
-    private $config_file = NULL;
-    private $configuration = NULL;
+    private $db = null;
+    private $db_conf = null;
+    private $config_file = null;
+    private $configuration = null;
 
     public function __construct($config_file) {
         $this->config_file = $config_file;
@@ -14,20 +14,20 @@ class Main {
             $this->success('Trying to parse configuration file <code>' . $config_file . '</code>');
             try {
                 $this->configuration = new Configuration($config_file);
-                assert($this->configuration != NULL);
+                assert($this->configuration !== null);
                 $this->success('Checking for database settings');
                 $this->db_conf = $this->configuration->db;
-                if ($this->db_conf == NULL) {
+                if ($this->db_conf === null) {
                     $this->error('The file <code>'.$config_file.'</code> has not defined a database configuration');
                 } else {
                     $this->success();
                 }
             }
             catch (Exception $e) {
-                $this->error('The file <code>'.$this->config_file.'</code> is not in valid JSON format');
+                $this->error('The file <code>'.$this->config_file.'</code> is not in valid YAML format');
             }
         } else {
-            $this->error('The file <code>'.$config_file.'</code> does not exists. Have you forgotten to ');
+            $this->error('The file <code>'.$config_file.'</code> does not exists. Have you forgotten to create it?');
         }
     }
 
@@ -44,18 +44,18 @@ class Main {
         echo '<li>' . $next . '&hellip; ';
     }
 
-    private function success($next_q = NULL) {
+    private function success($next_q = null) {
         echo '<strong class="text-success">Success</strong></li>';
-        if ($next_q !== NULL) {
+        if ($next_q !== null) {
             $this->next($next_q);
         }
     }
 
-    private function error($error, $details) {
+    private function error($error, $details = null) {
         echo '<strong class="text-danger">Failed</strong></li>';
         echo '</ul>';
         echo '<div class="alert alert-danger" role="alert"><strong>An error occured:</strong> ' . $error;
-        if ($details != null) {
+        if ($details !== null) {
             echo '<hr /><strong>Error message:</strong>';
             echo '<pre>' . $details . '</pre>';
         }
@@ -90,15 +90,15 @@ class Main {
         $index_statements = [];
         $constraint_statements = [];
 
-        array_push($statements, "`id` INT NOT NULL AUTO_INCREMENT COMMENT 'Primary Key for this table' ");
+        array_push($statements, "`id` INT NOT null AUTO_INCREMENT COMMENT 'Primary Key for this table' ");
 
         // Insert relationship columns first
         if (isset($model->belongs_to) && is_array($model->belongs_to)) {
             foreach ($model->belongs_to as $relation) {
-                $relation_name = NULL;
-                $column_name = NULL;
-                $index_name = NULL;
-                $table_name = NULL;
+                $relation_name = null;
+                $column_name = null;
+                $index_name = null;
+                $table_name = null;
                 if (is_object($relation)) {
                     $relation_name = $relation->name;
                     $column_name = $relation->name . '_id';
@@ -110,7 +110,7 @@ class Main {
                     $table_name = $relation;
                 }
                 $index_name = $column_name . '_INDEX';
-                array_push($statements, '`' . $column_name . '` INT NOT NULL');
+                array_push($statements, '`' . $column_name . '` INT NOT null');
                 array_push($index_statements, 'INDEX `' . $index_name . '` (`' . $column_name . '` ASC)');
                 array_push($constraint_statements, 'FOREIGN KEY (`' . $column_name . '`) REFERENCES `' . $this->db_conf->name . '`.`' . $table_name . 's` (`id`) ON DELETE CASCADE ON UPDATE CASCADE');
             }
@@ -130,7 +130,7 @@ class Main {
                 $prop = new Property($property);
                 array_push($statements, $prop->get_db_column_statement());
                 $index_statement = $prop->get_db_column_index_statements();
-                if ($index_statement !== NULL) {
+                if ($index_statement !== null) {
                     array_push($index_statements, $index_statement);
                 }
             }
@@ -240,6 +240,9 @@ class Main {
             catch (Exception $e) {
                $this->error('The server could not be connected', $e->getMessage());
             }
+        }
+        else {
+            $this->error('required properties are missing', $missing_prop);
         }
     }
 }

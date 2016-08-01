@@ -9,11 +9,10 @@ class Configuration {
     
     private function load_config ($file) {
         assert(file_exists($file));
-        $json = file_get_contents($file);
-        $this->configuration = json_decode($json);
-        if ($this->configuration == null) {
+        $this->configuration = json_decode(json_encode(spyc_load_file($file)));
+        if ($this->configuration === null) {
             $this->configuration = null;
-            throw new Exception($file . 'is not a valid JSON file');
+            throw new Exception($file . 'is not a valid YAML file');
         }
         assert(get_class($this->configuration) === 'stdClass');
     }

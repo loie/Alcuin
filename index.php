@@ -1,4 +1,5 @@
 <?php
+include 'libs/Spyc.php';
 include 'includes/Configuration.php';
 include 'includes/Property.php';
 include 'includes/Main.php';
