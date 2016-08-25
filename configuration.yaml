@@ -14,7 +14,7 @@ architecture:
     use_for_permission: role
     use_for_auth: user
     models:
-        - role:
+        role:
             name_plural: roles
             permissions:
                 create:
@@ -53,7 +53,7 @@ architecture:
             instances:
                 - type: user
                 - type: admin
-        - user:
+        user:
             name_plural: users
             permissions:
                 create:
@@ -76,17 +76,15 @@ architecture:
                         - self
                         - admin
                 list:
-                    - email:
-                        type: string
-                        max_length: 255
+                    email:
+                        type: email
                         use_as_id: true
-                        validation: "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
-                    - password:
+                    password:
                         type: hash
                         use_as_password: true
                         permissions:
                             - read: none
-                    - name:
+                    name:
                         type: string
                         max_length: 255
                         null_allowed: true
@@ -134,7 +132,7 @@ architecture:
             instances:
                 - email: nobody@example.com
                     key: value
-        - tag:
+        tag:
             name_plural: tags
             permissions:
                 create:
@@ -159,7 +157,7 @@ architecture:
                         default: tag_name
             relations:
                 questions:
-                    model: questions
+                    model: question
                     type: belongs_to_and_has_many
                     via_table: questions_tags
                     permissions:
@@ -170,7 +168,7 @@ architecture:
                             - all
                         delete:
                             - admin
-        - question:
+        question:
             name_plural: questions
             permissions:
                 create:
@@ -247,7 +245,7 @@ architecture:
                         delete:
                             - self
                             - admin
-        - answer:
+        answer:
             name_plural: answers
             permissions:
                 create:
