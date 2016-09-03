@@ -7,7 +7,7 @@ require 'db.php';
 function alcuin ($file) {
     // try to parse this file and use it as configuration object
     echo '<li>Searching for configuration file <code>' . $file . '</code>&hellip; ';
-
+    $configuration = null;
     if (file_exists($file)) {
         assert(file_exists($file));
         success('Trying to parse configuration file <code>' . $file . '</code>');
@@ -62,18 +62,14 @@ function alcuin ($file) {
                 error($e, 'Could not create new database');
             }
             success();
-            open_sub('Creating model tables in database');
-            $models = $configuration->architecture->models;
-            assert($models !== null);
-            foreach ($models as $model_name => $model) {
-                next_item('Creating table for Model <code>' . $model_name . '</code>');
-                create_model_in_db($configuration, $connection, $model_name);
-                success();
-            }
             // success(null);
             close_sub(); // Models close
 
             $processings = [
+                array(
+                    'description' => 'Creating model tables in database',
+                    'func' => 'create_model_in_db'
+                ),
                 array(
                     'description' => 'Creating associative tables',
                     'func' => 'create_assoc_tables'
@@ -91,12 +87,11 @@ function alcuin ($file) {
                     'func' => 'create_foreign_keys'
                 ),
             ];
-            array_walk($processings, function ($process) {
+            foreach ($processings as $process) {
                 open_sub($process['description']);
                 call_user_func($process['func'], $configuration, $connection);
                 close_sub();
-            });
-
+            }
             try {
                 // assert(true);
             } catch (Exception $e) {

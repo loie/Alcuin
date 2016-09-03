@@ -1,56 +1,48 @@
 <?php
-    
     const BELONGS_TO = 'belongs_to';
     const HAS_MANY = 'has_many';
     const BELONGS_TO_AND_HAS_MANY = 'belongs_to_and_has_many';
+    const HISTORY_TABLE_PREFIX = '$__history__';
 
-    function create_model_in_db ($configuration, $connection, $model_name) {
+    function create_model_in_db ($configuration, $connection) {
+        $models = $configuration->architecture->models;
+        assert($models !== null);
+        foreach ($models as $model_name => $model) {
+            next_item('Creating table for Model <code>' . $model_name . '</code>');        
+            $model_name_table = get_model_table_name($model_name, $model);
 
-        $model = $configuration->architecture->models->{$model_name};
-        $model_name_table = get_model_table_name($model_name, $model);
+            $query_string = 'CREATE TABLE `' . $configuration->db->name . '`.`' . $model_name_table . '` (';
+            $statements = [];
+            // id column
+            array_push($statements, "`id` INT NOT null AUTO_INCREMENT COMMENT 'Primary Key for this table' ");
 
-        $query_string = 'CREATE TABLE `' . $configuration->db->name . '`.`' . $model_name_table . '` (';
-        $statements = [];
-        // id column
-        array_push($statements, "`id` INT NOT null AUTO_INCREMENT COMMENT 'Primary Key for this table' ");
-
-        // Insert relationship columns first
-        if (isset($model->relations)) {
-            foreach ($model->relations as $relation_name => $relation) {
-                if ($relation->type === BELONGS_TO) {
-                    $column_name = $relation_name . '_id';
-                    array_push($statements, '`' . $column_name . '` INT NOT NULL');
-                }
+            // Insert relationship columns first
+            $columns = get_columns($model);
+            foreach ($columns as $column) {
+                array_push($statements, $column->statement);
             }
-        }
 
-        // other proerties columns
-        if (isset($model->properties) && isset($model->properties->list)) {
-            foreach ($model->properties->list as $column_name => $properties) {
-                $column_line = get_db_column_statement($column_name, $properties);
-                array_push($statements, $column_line);
+            // auth token column for models used for authentification
+            if ($configuration->architecture->use_for_auth === $model_name) {
+                $line = "`token` CHAR(40) CHARACTER SET 'utf8'";
+                array_push($statements, $line);   
             }
-        }
 
-        // auth token column for models used for authentification
-        if ($configuration->architecture->use_for_auth === $model_name) {
-            $line = "`token` CHAR(40) CHARACTER SET 'utf8'";
-            array_push($statements, $line);   
-        }
-
-        // set primary key
-        array_push($statements, 'PRIMARY KEY (`id`)');
-        $query_string .= implode(', ', $statements);
-        $query_string .= ');';
-        try {
-            $connection->exec($query_string);
-        } catch (Exception $e) {
-            error('Could not create table for ' . $model_name. '.', $e);
+            // set primary key
+            array_push($statements, 'PRIMARY KEY (`id`)');
+            $query_string .= implode(', ', $statements);
+            $query_string .= ');';
+            try {
+                echo $query_string;
+                $connection->exec($query_string);
+            } catch (Exception $e) {
+                error('Could not create table for ' . $model_name. '.', $e);
+            }
+            success();
         }
     }
 
     function create_assoc_tables ($configuration, $connection) {
-        var_dump($configuration);
         foreach ($configuration->architecture->models as $model_name => $model_properties) {
             if (isset($model_properties->relations)) {
                 // this model is related to other models
@@ -149,57 +141,174 @@
     }
 
     function create_history_tables ($configuration, $connection) {
-        $prepared_query = 'CREATE TABLE `{{db_name}}`.`history__{{table_name}}` LIKE `{{table_name}}`';
-        $prepared_alter_query = 'ALTER TABLE `{{db_name}}`.`history__{{table_name}}`
-            CHANGE `id` `id` int(10) unsigned,
+        $prepared_query = 'CREATE TABLE `{{db_name}}`.`' . HISTORY_TABLE_PREFIX .'{{table_name}}` LIKE `{{db_name}}`.`{{table_name}}`;';
+        $prepared_alter_query = 'ALTER TABLE `{{db_name}}`.`' . HISTORY_TABLE_PREFIX .'{{table_name}}`
+            CHANGE `id` `id` int(10) UNSIGNED,
             DROP PRIMARY KEY,
-            ADD `_revision` bigint unsigned AUTO_INCREMENT,
-            ADD `_revision_previous` bigint unsigned NULL,
-            ADD `_revision_action` enum(\'INSERT\',\'UPDATE\') default NULL,
-            ADD `_revision_user_id` int(10) unsigned NULL,
-            ADD `_revision_timestamp` datetime NULL default NULL,
-            ADD `_revision_comment` text NULL,
+            ADD `_revision` BIGINT UNSIGNED AUTO_INCREMENT,
+            ADD `_revision_previous` BIGINT UNSIGNED NULL,
+            ADD `_revision_user_id` INT UNSIGNED NULL,
+            ADD `_revision_timestamp` DATETIME NULL DEFAULT NULL,
             ADD PRIMARY KEY (`_revision`),
             ADD INDEX (`_revision_previous`),
             ADD INDEX `org_primary` (`id`);';
-        array_walk(get_object_vars($configuration->architecture->models), function ($model_name) {
-            $model_properties = $configuration->architecture->models->{$model_name};
-            $query = fill_with_data($prepared_query, array(
-                    'db_name' => $configuration->db->name,
-                    'table_name' => $model_name
-                ));
-            $connection->exec($query);
-            $alter_query = fill_with_data($prepared_alter_query, array(
-                    'db_name' => $configuration->db->name,
-                    'table_name' => $model_name
-                ));
-            $connection->exec($query);
+        $prepared_assoc_query = 'CREATE TABLE IF NOT EXISTS `{{db_name}}`.`' . HISTORY_TABLE_PREFIX .'{{assoc_table}}`
+            (`{{model_name}}_id` INT NOT NULL,
+            `{{relation_model_name}}_id` INT NOT NULL,
+            `_revision` BIGINT UNSIGNED AUTO_INCREMENT,
+            `_revision_previous` BIGINT UNSIGNED NULL,
+            `_revision_user_id` INT UNSIGNED NULL,
+            `_revision_timestamp` DATETIME NULL DEFAULT NULL,
+            PRIMARY KEY (`_revision`),
+            INDEX (`_revision_previous`));';
+        $prepared_trigger_after_insert_query = '
+            DELIMITER //
+            CREATE TRIGGER `{{table_name}}_insert_trigger`
+            AFTER INSERT
+                ON `{{db_name}}`.`{{table_name}}` FOR EACH ROW
+            BEGIN
+                INSERT INTO `' . HISTORY_TABLE_PREFIX . '{{table_name}}` (
+                    {{column_names}}
+                    _revision,
+                    _revision_previous,
+                    _revision_user_id,
+                    _revision_timestamp
+                ) VALUES (
+                    {{new_column_names}}
+                    0,
+                    NULL,
+                    0,
+                    CURRENT_TIMESTAMP());
+            END; //
+            DELIMITER ;';
+        $prepared_after_update_query = '
+            DELIMITER //
+            CREATE TRIGGER `questions_answers_insert_trigger`
+            AFTER INSERT
+                ON `questions_answers` FOR EACH ROW
+            BEGIN
+                DECLARE `prevRevision` INT(10) UNSIGNED;
+                INSERT INTO `$__history__answers` (
+                    question_id,
+                    answer_id,
+                    _revision,
+                    _revision_previous,
+                    _revision_user_id,
+                    _revision_timestamp
+                ) VALUES (
+                    NEW.question_id,
+                    NEW.answer_id,
+                    0,
+                    null,
+                    0,
+                    current_timestamp());
+            END; //
+            DELIMITER ;';
+        $prepared_after_delete_query = '';
+        foreach ($configuration->architecture->models as $model_name => $model_properties) {
+            try {
+                // creating history table
+                next_item('Creating history table for <code>' . $model_name . '</code>');
+                $table_name = get_model_table_name($model_name, $model_properties);
+                $query = fill_with_data($prepared_query, array(
+                        'db_name' => $configuration->db->name,
+                        'table_name' => $table_name
+                    ));
+                $connection->exec($query);
 
-        });
+                $alter_query = fill_with_data($prepared_alter_query, array(
+                        'db_name' => $configuration->db->name,
+                        'table_name' => $table_name
+                    ));
+                $connection->exec($alter_query);
+                success();
+
+                // creating trigger for history table
+                next_item('Creating history table for <code>' . $model_name . '</code>');
+                $columns = get_columns($model_properties);
+                $column_names = array_map(function ($column) {
+                    return $column->name;
+                }, $columns);
+                $new_column_names = array_map(function ($column) {
+                    return 'NEW.'.$column->name;
+                }, $columns);
+                $trigger_after_insert_query = fill_with_data($prepared_trigger_after_insert_query, array(
+                        'db_name' => $configuration->db->name,
+                        'table_name' => $table_name,
+                        'column_names' => $column_names,
+                        'new_column_names' => $new_column_names
+                    ));
+                $connection->exec($trigger_after_insert_query);
+                success();
+
+                foreach ($model_properties->relations as $relation_name => $relation_properties) {
+                    if ($relation_properties->type === BELONGS_TO_AND_HAS_MANY) {
+                        next_item('Creating history table for associative table <code>' . $relation_properties->via_table . '</code>');
+                        $assoc_query = fill_with_data($prepared_assoc_query, array(
+                            'db_name' => $configuration->db->name,
+                            'assoc_table' => $relation_properties->via_table,
+                            'model_name' => $model_name,
+                            'relation_model_name' => $relation_properties->model
+                        ));
+                        $connection->exec($assoc_query);
+                        success();
+                        next_item('Creating after insert trigger for associative table <code>' . $relation_properties->via_table . '</code>');
+                        success();
+                    }
+                }
+            }
+            catch (Exception $e) {
+                error('Error during creation of history tables', $e->getMessage());
+            }
+
+        }
     }
 
     function create_foreign_keys ($configuration, $connection) {
-        $query = 'ALTER TABLE `{{db_name}}`.`{{table_name}}`  ADD CONSTRAINT `{{fk_model}}_id` FOREIGN KEY (`{{fk_model}}_id`) REFERENCES `{{db_name}}`.`{{fk_table_name}}` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;';
+        $prepared_query = 'ALTER TABLE `{{db_name}}`.`{{table_name}}` ADD CONSTRAINT `{{model_name}}_{{fk_model}}_FK` FOREIGN KEY (`{{fk_model}}_id`) REFERENCES `{{db_name}}`.`{{fk_table_name}}` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;';
         foreach ($configuration->architecture->models as $model_name => $model_properties) {
-            // ALTER TABLE `test`.`answers` 
-            //     ADD INDEX `tierchen_INDEX` (`user_id` ASC, `text` ASC, `created` ASC);
-            if (isset($model_properties->relations)) {
-                foreach ($model_properties->relations as $relation_name => $relation_properties) {
-                    $query = null;
-                    $skip = false;
-                    $has_relation = false;
-                    if (isset($relation_properties->type)) {
-                        $model_table_name = get_model_table_name($model_name, $model_properties);
-                        switch ($relation_properties->type) {
-                            case BELONGS_TO:
-                                // $has_relation = true;
-                                // $query = 'ALTER TABLE `' .  . '`.`' . $model_table_name . '` ADD INDEX ';
-                                break;
-                            default:
-                                break;
+            try {
+                if (isset($model_properties->relations)) {
+                    foreach ($model_properties->relations as $relation_name => $relation_properties) {
+                        $query = null;
+                        $skip = false;
+                        $has_relation = false;
+                        if (isset($relation_properties->type)) {
+                            $model_table_name = get_model_table_name($model_name, $model_properties);
+                            switch ($relation_properties->type) {
+                                case BELONGS_TO:
+                                    $query = fill_with_data($prepared_query, array(
+                                        'db_name' => $configuration->db->name,
+                                        'model_name' => $model_name,
+                                        'table_name' => get_model_table_name($model_name, $model_properties),
+                                        'fk_model' => $relation_name,
+                                        'fk_table_name' => get_model_table_name($relation_properties->model, $configuration->architecture->models->{$relation_name})
+                                    ));
+                                    next_item('Creating foreign key constraints for <code>' . $model_name . '</code> and <code>' . $relation_properties->model . '</code>');
+                                    $connection->exec($query);
+                                    success();
+                                    break;
+                                case BELONGS_TO_AND_HAS_MANY:
+                                    $query = fill_with_data($prepared_query, array(
+                                        'db_name' => $configuration->db->name,
+                                        'model_name' => $model_name,
+                                        'table_name' => $relation_properties->via_table,
+                                        'fk_model' => $relation_properties->model,
+                                        'fk_table_name' => get_model_table_name($relation_properties->model, $configuration->architecture->models->{$relation_properties->model})
+                                    ));
+                                    next_item('Creating foreign key constraints for <code>' . $model_name . '</code> and <code>' . $relation_properties->model . '</code>');
+                                    $connection->exec($query);
+                                    success();
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception $e) {
+                error('Could not create containt', $e->getMessage());
             }
         }
     }
@@ -289,83 +398,40 @@
     function fill_with_data ($prepared_query, $replacements) {
         $query = $prepared_query;
         foreach ($replacements as $key => $value) {
-            $query = str_replace('{{' . $key . '}}', $value, $query);
+            if (is_string($value)) {
+                $query = str_replace('{{' . $key . '}}', $value, $query);
+            } else if (is_array($value)) {
+                $flat_value = implode(',', $value);
+                $query = str_replace('{{' . $key . '}}', $flat_value, $query);
+            }
         }
         return $query;
     }
 
-    // function get_db_column_index_statements() {
-    //     $statement = NULL;
+    function get_columns ($model) {
+        $columns = [];
 
-    //     if (isset($this->description->property->use_as_id) && is_bool($this->description->use_as_id)) {
-    //         $statement = 'UNIQUE INDEX `' . $this->description->name . '_UNIQUE` (`' . $this->description->name . '` ASC)';
-    //     }
-    //     return $statement;
-    // }
+        if (isset($model->relations)) {
+            foreach ($model->relations as $relation_name => $relation) {
+                if ($relation->type === BELONGS_TO) {
+                    $column = new stdClass();
+                    $column->name = $relation_name . '_id';
+                    $column->statement = '`' . $column->name . '` INT NOT NULL';
+                    array_push($columns, $column);
+                }
+            }
+        }
 
+        // other proerties columns
+        if (isset($model->properties) && isset($model->properties->list)) {
+            foreach ($model->properties->list as $column_name => $properties) {
+                $column = new stdClass();
+                $column->name = $column_name;
+                $column->statement = get_db_column_statement($column_name, $properties);
+                array_push($columns, $column);
+            }
+        }
 
-        // if (isset($model->belongs_to) && is_array($model->belongs_to)) {
-        //     foreach ($model->belongs_to as $relation) {
-        //         $relation_name = null;
-        //         $column_name = null;
-        //         $index_name = null;
-        //         $table_name = null;
-        //         if (is_object($relation)) {
-        //             $relation_name = $relation->name;
-        //             $column_name = $relation->name . '_id';
-        //             $table_name = $relation->model;
-        //         }
-        //         else if (is_string($relation)) {
-        //             $relation_name = $relation;
-        //             $column_name = $relation . '_id';
-        //             $table_name = $relation;
-        //         }
-        //         $index_name = $column_name . '_INDEX';
-        //         array_push($statements, '`' . $column_name . '` INT NOT null');
-        //         // array_push($index_statements, 'INDEX `' . $index_name . '` (`' . $column_name . '` ASC)');
-        //         // array_push($constraint_statements, 'FOREIGN KEY (`' . $column_name . '`) REFERENCES `' . $this->db_conf->name . '`.`' . $table_name . 's` (`id`) ON DELETE CASCADE ON UPDATE CASCADE');
-        //     }
-        // }
-
-    // array_push($index_statements, $index_line);
-            // $line = "`token_last_updated` DATETIME NULL DEFAULT '0000-00-00 00:00:00'";
-            // $index_line = 'INDEX `token_last_updated_INDEX` (`token_last_updated` ASC)';
-            // array_push($statements, $line);
-            // array_push($index_statements, $index_line);
-
-
-        // // create as_bs table for a->belongs_to_and_has_many(b)
-        // if (isset($model->belongs_to_and_has_many) && is_array($model->belongs_to_and_has_many)) {
-        //     foreach($model->belongs_to_and_has_many as $relation) {
-        //         $relation_model = new stdClass();
-        //         if (is_string($relation)) {
-        //             $relation_model->name = $model->name . 's_' . $relation;
-        //         }
-        //         else if (is_array($relation)) {
-        //             $relation_model->name = $model->name . 's_' . $relation->name;
-        //         }
-        //         $relation_model->belongs_to = [$model->name, $relation];
-        //         create_model_in_db($relation_model, false, false);
-        //     }
-        // }
-
-
-        // insert 
-        // if (isset($model->instances) && is_array($model->instances)) {
-        //     foreach ($model->instances as $column_name => $properties) {
-        //         $insert_statement = "INSERT INTO " . $model_name . " ({keys}) VALUES ({values})";
-        //         $column_names = array();
-        //         $propertiess = array();
-        //         foreach (get_object_vars($properties) as $key => $properties) {
-        //             array_push($column_names, $key);
-        //             array_push($propertiess, "'" . $properties . "'");
-        //             $insert_statement = str_replace('{keys}', implode(',', $column_names), $insert_statement);
-        //             $insert_statement = str_replace('{values}', implode(',', $properties), $insert_statement);
-        //             $connection->exec($insert_statement);
-        //         }
-        //     }
-        // }
-
-    // $index_line = 'INDEX `token_INDEX` (`token` ASC)';
-        // $all_statements = array_merge($statements, $index_statements, $constraint_statements);
+        return $columns;
+    }
 ?>
