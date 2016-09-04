@@ -33,7 +33,6 @@
             $query_string .= implode(', ', $statements);
             $query_string .= ');';
             try {
-                echo $query_string;
                 $connection->exec($query_string);
             } catch (Exception $e) {
                 error('Could not create table for ' . $model_name. '.', $e);
@@ -161,26 +160,25 @@
             `_revision_timestamp` DATETIME NULL DEFAULT NULL,
             PRIMARY KEY (`_revision`),
             INDEX (`_revision_previous`));';
-        $prepared_trigger_after_insert_query = '
-            DELIMITER //
-            CREATE TRIGGER `{{table_name}}_insert_trigger`
-            AFTER INSERT
-                ON `{{db_name}}`.`{{table_name}}` FOR EACH ROW
-            BEGIN
-                INSERT INTO `' . HISTORY_TABLE_PREFIX . '{{table_name}}` (
-                    {{column_names}}
-                    _revision,
-                    _revision_previous,
-                    _revision_user_id,
-                    _revision_timestamp
-                ) VALUES (
-                    {{new_column_names}}
-                    0,
-                    NULL,
-                    0,
-                    CURRENT_TIMESTAMP());
-            END; //
-            DELIMITER ;';
+        $prepared_trigger_after_insert_query = 'DELIMITER //
+CREATE TRIGGER `{{table_name}}_insert_trigger`
+AFTER INSERT
+    ON `{{db_name}}`.`{{table_name}}` FOR EACH ROW
+BEGIN
+    INSERT INTO `' . HISTORY_TABLE_PREFIX . '{{table_name}}` (
+        {{column_names}},
+        `_revision`,
+        `_revision_previous`,
+        `_revision_user_id`,
+        `_revision_timestamp`
+    ) VALUES (
+        {{new_column_names}}
+        0,
+        NULL,
+        0,
+        CURRENT_TIMESTAMP());
+END; //
+DELIMITER ;';
         $prepared_after_update_query = '
             DELIMITER //
             CREATE TRIGGER `questions_answers_insert_trigger`
@@ -227,7 +225,7 @@
                 next_item('Creating history table for <code>' . $model_name . '</code>');
                 $columns = get_columns($model_properties);
                 $column_names = array_map(function ($column) {
-                    return $column->name;
+                    return '`' . $column->name . '`';
                 }, $columns);
                 $new_column_names = array_map(function ($column) {
                     return 'NEW.'.$column->name;
@@ -238,6 +236,7 @@
                         'column_names' => $column_names,
                         'new_column_names' => $new_column_names
                     ));
+                echo '<pre>' . $trigger_after_insert_query . '</pre>';
                 $connection->exec($trigger_after_insert_query);
                 success();
 
