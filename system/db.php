@@ -146,7 +146,6 @@
             DROP PRIMARY KEY,
             ADD `_revision` BIGINT UNSIGNED AUTO_INCREMENT,
             ADD `_revision_previous` BIGINT UNSIGNED NULL,
-            ADD `_revision_user_id` INT UNSIGNED NULL,
             ADD `_revision_timestamp` DATETIME NULL DEFAULT NULL,
             ADD PRIMARY KEY (`_revision`),
             ADD INDEX (`_revision_previous`),
@@ -156,7 +155,6 @@
             `{{relation_model_name}}_id` INT NOT NULL,
             `_revision` BIGINT UNSIGNED AUTO_INCREMENT,
             `_revision_previous` BIGINT UNSIGNED NULL,
-            `_revision_user_id` INT UNSIGNED NULL,
             `_revision_timestamp` DATETIME NULL DEFAULT NULL,
             PRIMARY KEY (`_revision`),
             INDEX (`_revision_previous`));';
@@ -166,18 +164,45 @@
                 ON {{table_name}} FOR EACH ROW
             BEGIN
                 INSERT INTO `' . HISTORY_TABLE_PREFIX . '{{table_name}}` (
+                    `id`,
                     {{column_names}},
                     `_revision`,
                     `_revision_previous`,
                     `_revision_user_id`,
                     `_revision_timestamp`
                 ) VALUES (
+                    NEW.id,
                     {{new_column_names}},
                     0,
                     NULL,
                     0,
                     CURRENT_TIMESTAMP());
             END';
+        $prepared_trigger_after_update_query = '
+            CREATE TRIGGER questions_update_trigger
+                AFTER UPDATE
+                    ON questions
+                FOR EACH ROW 
+                BEGIN
+                    DECLARE prevRevision INT UNSIGNED;
+                    SELECT `_revision` FROM `$__history__questions` WHERE `id` = NEW.id ORDER BY `_revision` DESC LIMIT 1 INTO prevRevision;
+                    INSERT INTO `$__history__questions` (
+                        `id`,
+                        `user_id`,
+                        `title`,
+                        `text`,
+                        `upvotes`,
+                        `created`,
+                        `edited`,
+                        `_revision_previous`,
+                        `_revision_timestamp`
+                    ) VALUES (
+                        NEW.id,
+                        NEW.user_id,NEW.title,NEW.text,NEW.upvotes,NEW.created,NEW.edited,
+                        prevRevision,
+                        CURRENT_TIMESTAMP()
+                    );
+                END';
         $prepared_after_update_query = '
             DELIMITER //
             CREATE TRIGGER `questions_answers_insert_trigger`
