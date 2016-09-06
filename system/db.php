@@ -147,6 +147,7 @@
             ADD `_revision` BIGINT UNSIGNED AUTO_INCREMENT,
             ADD `_revision_previous` BIGINT UNSIGNED NULL,
             ADD `_revision_timestamp` DATETIME NULL DEFAULT NULL,
+            ADD `_revision_is_terminal` INT(1) NOT NULL DEFAULT 0,
             ADD PRIMARY KEY (`_revision`),
             ADD INDEX (`_revision_previous`),
             ADD INDEX `org_primary` (`id`);';
@@ -156,6 +157,7 @@
             `_revision` BIGINT UNSIGNED AUTO_INCREMENT,
             `_revision_previous` BIGINT UNSIGNED NULL,
             `_revision_timestamp` DATETIME NULL DEFAULT NULL,
+            `_revision_is_terminal` INT(1) NOT NULL DEFAULT 0,
             PRIMARY KEY (`_revision`),
             INDEX (`_revision_previous`));';
         $prepared_trigger_after_insert_query = '
@@ -166,67 +168,56 @@
                 INSERT INTO `' . HISTORY_TABLE_PREFIX . '{{table_name}}` (
                     `id`,
                     {{column_names}},
-                    `_revision`,
                     `_revision_previous`,
-                    `_revision_user_id`,
                     `_revision_timestamp`
                 ) VALUES (
                     NEW.id,
                     {{new_column_names}},
-                    0,
                     NULL,
-                    0,
                     CURRENT_TIMESTAMP());
             END';
         $prepared_trigger_after_update_query = '
-            CREATE TRIGGER questions_update_trigger
+            CREATE TRIGGER {{table_name}}_update_trigger
                 AFTER UPDATE
-                    ON questions
+                    ON {{table_name}}
                 FOR EACH ROW 
                 BEGIN
                     DECLARE prevRevision INT UNSIGNED;
-                    SELECT `_revision` FROM `$__history__questions` WHERE `id` = NEW.id ORDER BY `_revision` DESC LIMIT 1 INTO prevRevision;
-                    INSERT INTO `$__history__questions` (
+                    SELECT `_revision` FROM `' . HISTORY_TABLE_PREFIX . '{{table_name}}` WHERE `id` = NEW.id ORDER BY `_revision` DESC LIMIT 1 INTO prevRevision;
+                    INSERT INTO `' . HISTORY_TABLE_PREFIX . '{{table_name}}` (
                         `id`,
-                        `user_id`,
-                        `title`,
-                        `text`,
-                        `upvotes`,
-                        `created`,
-                        `edited`,
+                        {{column_names}},
                         `_revision_previous`,
                         `_revision_timestamp`
                     ) VALUES (
                         NEW.id,
-                        NEW.user_id,NEW.title,NEW.text,NEW.upvotes,NEW.created,NEW.edited,
+                        {{new_column_names}},
                         prevRevision,
                         CURRENT_TIMESTAMP()
                     );
                 END';
-        $prepared_after_update_query = '
-            DELIMITER //
-            CREATE TRIGGER `questions_answers_insert_trigger`
-            AFTER INSERT
-                ON `questions_answers` FOR EACH ROW
-            BEGIN
-                DECLARE `prevRevision` INT(10) UNSIGNED;
-                INSERT INTO `$__history__answers` (
-                    question_id,
-                    answer_id,
-                    _revision,
-                    _revision_previous,
-                    _revision_user_id,
-                    _revision_timestamp
-                ) VALUES (
-                    NEW.question_id,
-                    NEW.answer_id,
-                    0,
-                    null,
-                    0,
-                    current_timestamp());
-            END; //
-            DELIMITER ;';
-        $prepared_after_delete_query = '';
+        $prepared_trigger_after_delete_query = '
+            CREATE TRIGGER {{table_name}}_delete_trigger
+                AFTER DELETE
+                    ON {{table_name}}
+                FOR EACH ROW 
+                BEGIN
+                    DECLARE prevRevision INT UNSIGNED;
+                    SELECT `_revision` FROM `' . HISTORY_TABLE_PREFIX . '{{table_name}}` WHERE `id` = OLD.id ORDER BY `_revision` DESC LIMIT 1 INTO prevRevision;
+                    INSERT INTO `' . HISTORY_TABLE_PREFIX . '{{table_name}}` (
+                        `id`,
+                        {{column_names}},
+                        `_revision_previous`,
+                        `_revision_timestamp`,
+                        `_revision_is_terminal`
+                    ) VALUES (
+                        OLD.id,
+                        {{old_column_names}},
+                        prevRevision,
+                        CURRENT_TIMESTAMP(),
+                        1
+                    );
+                END';
         foreach ($configuration->architecture->models as $model_name => $model_properties) {
             try {
                 // creating history table
@@ -246,7 +237,7 @@
                 success();
 
                 // creating trigger for history table
-                next_item('Creating instert trigger for <code>' . $model_name . '</code>');
+                next_item('Creating triggers for <code>' . $model_name . '</code>');
                 $columns = get_columns($model_properties);
                 $column_names = array_map(function ($column) {
                     return '`' . $column->name . '`';
@@ -254,15 +245,23 @@
                 $new_column_names = array_map(function ($column) {
                     return 'NEW.'.$column->name;
                 }, $columns);
-                $trigger_after_insert_query = fill_with_data($prepared_trigger_after_insert_query, array(
+                $old_column_names = array_map(function ($column) {
+                    return 'OLD.'.$column->name;
+                }, $columns);
+                $triggers = [$prepared_trigger_after_insert_query,
+                    $prepared_trigger_after_update_query,
+                    $prepared_trigger_after_delete_query];
+                foreach ($triggers as $prepared_trigger_query) {
+                    $trigger_query = fill_with_data($prepared_trigger_query, array(
                         'db_name' => $configuration->db->name,
                         'table_name' => $table_name,
                         'column_names' => $column_names,
-                        'new_column_names' => $new_column_names
-                    ));
-                echo '<pre>' . $trigger_after_insert_query . '</pre>';
-                $connection->exec('USE ' . $configuration->db->name);
-                $connection->exec($trigger_after_insert_query);
+                        'new_column_names' => $new_column_names,
+                        'old_column_names' => $old_column_names));
+                    // echo '<pre>' . $trigger_query . '</pre>';
+                    $connection->exec('USE ' . $configuration->db->name);
+                    $connection->exec($trigger_query);
+                }
                 success();
 
                 foreach ($model_properties->relations as $relation_name => $relation_properties) {
