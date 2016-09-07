@@ -176,6 +176,22 @@
                     NULL,
                     CURRENT_TIMESTAMP());
             END';
+        $prepared_via_table_trigger_after_insert_query = '
+            CREATE TRIGGER {{table_name}}_insert_trigger
+            AFTER INSERT
+                ON {{table_name}} FOR EACH ROW
+            BEGIN
+                INSERT INTO `' . HISTORY_TABLE_PREFIX . '{{table_name}}` (
+                    {{this_model_name}}_id,
+                    {{relation_model_name}}_id,
+                    `_revision_previous`,
+                    `_revision_timestamp`
+                ) VALUES (
+                    NEW.{{this_model_name}}_id,
+                    NEW.{{relation_model_name}}_id,
+                    NULL,
+                    CURRENT_TIMESTAMP());
+            END';
         $prepared_trigger_after_update_query = '
             CREATE TRIGGER {{table_name}}_update_trigger
                 AFTER UPDATE
@@ -213,6 +229,28 @@
                     ) VALUES (
                         OLD.id,
                         {{old_column_names}},
+                        prevRevision,
+                        CURRENT_TIMESTAMP(),
+                        1
+                    );
+                END';
+        $prepared_via_table_trigger_after_delete_query = '
+            CREATE TRIGGER {{table_name}}_delete_trigger
+                AFTER DELETE
+                    ON {{table_name}}
+                FOR EACH ROW 
+                BEGIN
+                    DECLARE prevRevision INT UNSIGNED;
+                    SELECT `_revision` FROM `' . HISTORY_TABLE_PREFIX . '{{table_name}}` WHERE `{{this_model_name}}_id` = OLD.{{this_model_name}}_id AND `{{relation_model_name}}_id` = OLD.{{relation_model_name}}_id ORDER BY `_revision` DESC LIMIT 1 INTO prevRevision;
+                    INSERT INTO `' . HISTORY_TABLE_PREFIX . '{{table_name}}` (
+                        `{{this_model_name}}_id`,
+                        `{{relation_model_name}}_id`,
+                        `_revision_previous`,
+                        `_revision_timestamp`,
+                        `_revision_is_terminal`
+                    ) VALUES (
+                        OLD.{{this_model_name}}_id,
+                        OLD.{{relation_model_name}}_id,
                         prevRevision,
                         CURRENT_TIMESTAMP(),
                         1
@@ -258,7 +296,6 @@
                         'column_names' => $column_names,
                         'new_column_names' => $new_column_names,
                         'old_column_names' => $old_column_names));
-                    // echo '<pre>' . $trigger_query . '</pre>';
                     $connection->exec('USE ' . $configuration->db->name);
                     $connection->exec($trigger_query);
                 }
@@ -275,8 +312,28 @@
                         ));
                         $connection->exec($assoc_query);
                         success();
-                        next_item('Creating after insert trigger for associative table <code>' . $relation_properties->via_table . '</code>');
-                        success();
+                        next_item('Creating triggers for associative table <code>' . $relation_properties->via_table . '</code>');
+                        $via_table_triggers = [$prepared_via_table_trigger_after_insert_query, $prepared_via_table_trigger_after_delete_query];
+                        $prepared_check_trigger_query = "SELECT TRIGGER_NAME FROM information_schema.triggers WHERE TRIGGER_SCHEMA = '{{db_name}}' AND (TRIGGER_NAME = '{{table_name}}_delete_trigger' OR TRIGGER_NAME = '{{table_name}}_insert_trigger')";
+                        $check_trigger_query = fill_with_data($prepared_check_trigger_query, array(
+                            'db_name' => $configuration->db->name,
+                            'table_name' => $relation_properties->via_table
+                        ));
+                        if ($connection->query($check_trigger_query)->rowCount() < count($via_table_triggers)) {
+                            foreach ($via_table_triggers as $prepared_trigger_query) {
+                                $connection->exec('USE ' . $configuration->db->name);
+                                $trigger_query = fill_with_data($prepared_trigger_query, array(
+                                    'db_name' => $configuration->db->name,
+                                    'table_name' => $relation_properties->via_table,
+                                    'this_model_name' => $model_name,
+                                    'relation_model_name' => $relation_properties->model,
+                                ));
+                                $connection->exec($trigger_query);
+                            }
+                            success();
+                        } else {
+                            skipped();
+                        }
                     }
                 }
             }
@@ -288,7 +345,11 @@
     }
 
     function create_foreign_keys ($configuration, $connection) {
-        $prepared_query = 'ALTER TABLE `{{db_name}}`.`{{table_name}}` ADD CONSTRAINT `{{model_name}}_{{fk_model}}_FK` FOREIGN KEY (`{{fk_model}}_id`) REFERENCES `{{db_name}}`.`{{fk_table_name}}` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;';
+        /* We use RESTRICT because of the MySQL bug 
+         * https://bugs.mysql.com/bug.php?id=11472
+         * Deleting thing mean, the application layer has to take care of this
+         */
+        $prepared_query = 'ALTER TABLE `{{db_name}}`.`{{table_name}}` ADD CONSTRAINT `{{model_name}}_{{fk_model}}_FK` FOREIGN KEY (`{{fk_model}}_id`) REFERENCES `{{db_name}}`.`{{fk_table_name}}` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;';
         foreach ($configuration->architecture->models as $model_name => $model_properties) {
             try {
                 if (isset($model_properties->relations)) {
