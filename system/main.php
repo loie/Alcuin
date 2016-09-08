@@ -86,6 +86,10 @@ function alcuin ($file) {
                     'description' => 'Creating foreign keys for all tables',
                     'func' => 'create_foreign_keys'
                 ),
+                array(
+                    'description' => 'Creating instances',
+                    'func' => 'create_instances'
+                )
             ];
             foreach ($processings as $process) {
                 open_sub($process['description']);

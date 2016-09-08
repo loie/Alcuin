@@ -131,7 +131,7 @@ architecture:
                             - none
             instances:
                 - email: nobody@example.com
-                    key: value
+                  name: Lorenz Merdian
         tag:
             name_plural: tags
             permissions:

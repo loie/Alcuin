@@ -397,6 +397,37 @@
         }
     }
 
+    function create_instances ($configuration, $connection) {
+        $models = $configuration->architecture->models;
+        assert($models !== null);
+        foreach ($models as $model_name => $model_properties) {
+            if (isset($model_properties->instances)) {
+                assert($model_properties->instances !== null);
+                if (is_array($model_properties->instances)) {
+                    next_item('Creating instance for model <code>' . $model_name . '</code>');
+                    $prepared_insert_query = 'INSERT INTO `{{db_name}}`.`{{table_name}}` ({{column_names}}) VALUES ({{values}});';
+                    foreach ($model_properties->instances as $instance) {
+                        $keys = get_object_vars($instance);
+                        $column_names = [];
+                        $values = [];
+                        foreach ($keys as $key => $value) {
+                            array_push($column_names, '`' . $key . '`');
+                            array_push($values, '\'' . $value . '\'');
+                        }
+                        $insert_query = fill_with_data($prepared_insert_query, array(
+                            'db_name' => $configuration->db->name,
+                            'table_name' => get_model_table_name($model_name, $model_properties),
+                            'column_names' => $column_names,
+                            'values' => $values
+                        ));
+                        $connection->exec($insert_query);
+                    }
+                    success();
+                }
+            }
+        }
+    }
+
     /* Get table name for model */
     function get_model_table_name ($model_name, $model_properties) {
         $model_table_name = null;
