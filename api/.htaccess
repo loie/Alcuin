@@ -1,10 +1,8 @@
-#php_flag assert.active 1
-#php_flag assert.bail 1
-#php_value date.timezone "UTC"
+php_flag assert.active 1
+php_flag assert.bail 1
+php_value date.timezone "UTC"
 
-
-#RewriteEngine On
-#RewriteBase /~lmerdian/alcuin/api/
-#RewriteCond %{REQUEST_FILENAME} !-f
-#RewriteCond %{REQUEST_FILENAME} !-d
-#RewriteRule ^(.*)$ index.php/$1 [L]
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

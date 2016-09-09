@@ -1,6 +1,19 @@
 <?php
-require      'vendor/autoload.php';
-require_once 'vendor/idiorm/idiorm.php';
+
+require 'vendor/autoload.php';
+use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\ResponseInterface as Response;
+
+
+$app = new \Slim\App;
+$app->get('/hello/{name}', function (Request $request, Response $response) {
+    $name = $request->getAttribute('name');
+    $response->getBody()->write("Hello, $name");
+
+    return $response;
+});
+$app->run();
+// require_once 'vendor/idiorm/idiorm.php';
 
 /**
  * Step 2: Instantiate a Slim application
@@ -10,7 +23,7 @@ require_once 'vendor/idiorm/idiorm.php';
  * your Slim application now by passing an associative array
  * of setting names and values into the application constructor.
  */
-$app = new Slim\App();
+// $app = new Slim\App();
 
 // ORM::configure(array(
 //     'connection_string' => 'mysql:host=localhost;dbname=test',
@@ -56,15 +69,5 @@ Immer alle, eine ID und alle direkten Verbindungen
 /questions/:id/users
 /questions/:id/tags
 
-
-
-
 */
-
-// echo '<pre>';
-// print_r($lorenz);
-// echo '</pre>';
-// echo '<pre>';
-// print_r($one);
-// echo '</pre>';
 ?>

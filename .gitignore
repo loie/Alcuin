@@ -2,3 +2,4 @@
 .svn
 .sublime-project
 configuration.json
+api/vendor/*
