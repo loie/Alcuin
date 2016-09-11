@@ -6,6 +6,11 @@ use \Psr\Http\Message\ResponseInterface as Response;
 
 
 $app = new \Slim\App;
+
+$app->get('/hello', function (Request $request, Response $response) {
+    $response->getBody()->write('LOL');
+    return $response;
+});
 $app->get('/hello/{name}', function (Request $request, Response $response) {
     $name = $request->getAttribute('name');
     $response->getBody()->write("Hello, $name");
