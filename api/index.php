@@ -17,6 +17,13 @@ $app->get('/hello/{name}', function (Request $request, Response $response) {
 
     return $response;
 });
+
+$app->get('/salt', function (Request $request, Response $response) {
+    $salt = [1,3,5,7,9,10,13,25,26,27,28,32];
+    $time = microtime();
+    $response->getBody()->write(hash('sha256', $time));
+    return $response;
+});
 $app->run();
 // require_once 'vendor/idiorm/idiorm.php';
 
