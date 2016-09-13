@@ -11,14 +11,20 @@ class User extends Base_Model {
     ];
     protected static PERMISSIONS = [
         'entity' => [
-            'create' => [],
-            'read' => [],
-            'update' => [],
-            'delete' => []
+            'create' => ['all'],
+            'read' => ['self', 'user'],
+            'update' => ['self'],
+            'delete' => ['self']
         ],
         'columns' => [
-            'read' => [],
-            'update' => []
+            'email' => [
+                'read' => ['user'],
+                'update' => ['self']
+            ],
+            'password' => [
+                'read' => ['none'],
+                'update' => ['self']
+            ]
         ]
     ];
 
@@ -27,13 +33,17 @@ class User extends Base_Model {
 
     public function __construct ($connection, $desc = null) {
         assert($connection != null);
+        $prepared_query = null;
         if ($id === null) {
             return $this;
         } else if (is_string($desc) or is_numeric($desc)) {
             $id = $desc;
-
+            $prepared_query = 'SELECT * FROM `' . User::TABLE_NAME . '` WHERE id = \'' . $desc . '\'';
         } else if (is_array($desc)) {
-
+            assert(array_key_exists('email', $desc));
+            assert(array_key_exists('password_hash', $desc));
+            $prepared_query = 'SELECT '
+            $connection->
         }
     }
 
