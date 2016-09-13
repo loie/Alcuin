@@ -1,11 +1,42 @@
 <?php
 
 require 'vendor/autoload.php';
+require 'utils/utils.php';
+
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
+// autoload Models, Views and Controllers
+spl_autoload_register('apiAutoload');
+function apiAutoload ($classname) {
+    foreach (Helpers::getDirMapping() as $class_regex => $dir_name) {
+        if (preg_match($class_regex, $classname) &&
+            file_exists(__DIR__ . $dir_name . $classname . '.php')) {
+            require __DIR__ . $dir_name . $classname . '.php';
+            return true;
+        }
+    }
+    return false;
+}
 
+/* set up */
+$config['displayErrorDetails'] = true;
+$config['addContentLengthHeader'] = false;
+$config['db']['hostname'] = 'localhost';
+$config['db']['db_name'] = 'test';
+$config['db']['user'] = 'root';
+$config['db']['password'] = 'bernie';
 
-$app = new \Slim\App;
+$app = new \Slim\App(['settings' => $config]);
+$container = $app->getContainer();
+
+$container['db'] = function ($c) {
+    $db = $c['settings']['db'];
+    $pdo = new PDO("mysql:host=" . $db['host'] . ";dbname=" . $db['db_name'],
+        $db['user'], $db['pass']);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJECT);
+    return $pdo;
+};
 
 $app->get('/hello', function (Request $request, Response $response) {
     $response->getBody()->write('LOL');
@@ -25,7 +56,30 @@ $app->get('/salt', function (Request $request, Response $response) {
     return $response;
 });
 $app->run();
-// require_once 'vendor/idiorm/idiorm.php';
+
+// ORM::configure(array(
+//     'connection_string' => 'mysql:host=' . $container['db']['hostname'] . ';dbname=' . $container['db']['db_name'],
+//     'username' => $container['db']['user'],
+//     'password' => $container['db']['password']
+// ));
+
+// ORM::configure('error_mode', PDO::ERRMODE_WARNING);
+// ORM::configure('id_column', 'id');
+// ORM::configure('id_column_overrides', array(
+//     '$__history__answers' => '_revision_id',
+//     '$__history__questions' => '_revision_id',
+//     '$__history__questions_answers' => '_revision_id',
+//     '$__history__questions_tags' => '_revision_id',
+//     '$__history__roles' => '_revision_id',
+//     '$__history__tags' => '_revision_id',
+//     '$__history__users' => '_revision_id',
+//     '$__history__users_roles' => '_revision_id',
+//     'questions_answers' => array('answer_id', 'question_id')
+//     'questions_tags' => array('tag_id', 'question_id')
+//     'users_roles' => array('role_id', 'user_id')
+// ));
+
+// ORM::configure('caching_auto_clear', true);
 
 /**
  * Step 2: Instantiate a Slim application
@@ -37,20 +91,7 @@ $app->run();
  */
 // $app = new Slim\App();
 
-// ORM::configure(array(
-//     'connection_string' => 'mysql:host=localhost;dbname=test',
-//     'username' => 'root',
-//     'password' => 'bernie'
-// ));
 
-// ORM::configure('error_mode', PDO::ERRMODE_WARNING);
-// ORM::configure('id_column', 'id');
-// ORM::configure('id_column_overrides', array(
-//     '$__history__users_roles' => '_revision_id',
-//     'users_roles' => array('role_id', 'user_id')
-// ));
-
-// ORM::configure('caching_auto_clear', true);
 
 // $lorenz = ORM::for_table('users')->where('email', 'lorenz.merdian@googlemail.com')->find_one();
 // $users = ORM::for_table('users')->find_many();
