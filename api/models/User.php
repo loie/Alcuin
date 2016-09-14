@@ -37,8 +37,13 @@ class User extends Base_Model {
         if ($id === null) {
             return $this;
         } else if (is_string($desc) or is_numeric($desc)) {
-            $id = $desc;
-            $prepared_query = 'SELECT * FROM `' . User::TABLE_NAME . '` WHERE id = \'' . $desc . '\'';
+            $id = $desc;//
+            $prepared_query = 'SELECT * FROM `' . User::TABLE_NAME . '` WHERE id = \'' . $desc . '\' LIMIT 1';
+            $result = $connection->query($prepared_query);
+            if ($result->rowCount() === 1) {
+                $this->original = $result->fetchObject();
+                $this->current = clone $this->original;
+            }
         } else if (is_array($desc)) {
             assert(array_key_exists('email', $desc));
             assert(array_key_exists('password_hash', $desc));
