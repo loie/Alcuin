@@ -24,7 +24,7 @@
 
             // auth token column for models used for authentification
             if ($configuration->architecture->use_for_auth === $model_name) {
-                $line = "`token` CHAR(40) CHARACTER SET 'utf8'";
+                $line = "`token` CHAR(64) CHARACTER SET 'utf8'";
                 array_push($statements, $line);   
             }
 
