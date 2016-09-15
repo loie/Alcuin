@@ -4,6 +4,7 @@ require 'Base_Model.php';
 
 class User extends Base_Model {
 
+    public static MODEL_NAME = 'user';
     protected static TABLE_NAME = 'users';
     protected static COLUMNS = ['email', 'password', 'name', 'token'];
     protected static VALIDATION = [
@@ -25,20 +26,57 @@ class User extends Base_Model {
                 'read' => ['none'],
                 'update' => ['self']
             ]
+        ],
+        'relations' => [
+            'roles' => [
+                'create' => [],
+                'read' => [],
+                'delete' => []
+            ],
+            'questions' => [
+                'create' => [],
+                'read' => [],
+                'delete' => []
+            ],
+            'answers' => [
+                'create' => [],
+                'read' => [],
+                'delete' => []
+            ],
+        ]
+    ];
+
+    protected static RELATIONS = [
+        'roles' => [
+            'model' => 'role'
+            'type' => static::BELONGS_TO_AND_HAS_MANY
+            'via_table' => 'users_roles'
+        ],
+        'questions' => [
+            'model' => 'question'
+            'type' => static::HAS_MANY
+        ]
+        'answers' => [
+            'model' => 'answer',
+            'type' => static::HAS_MANY
         ]
     ];
 
     private $current = new stdClass();
     private $original = new stdClass();
 
-    public function __construct ($connection, $desc = null) {
+    public function __construct ($connection, $desc = null, $roles) {
         assert($connection != null);
         $prepared_query = null;
         if ($id === null) {
             return $this;
         } else if (is_string($desc) or is_numeric($desc)) {
             $id = $desc;//
-            $prepared_query = 'SELECT * FROM `' . User::TABLE_NAME . '` WHERE id = \'' . $desc . '\' LIMIT 1';
+            // check whether it's allowed to be read
+            // 
+
+            $prepared_query = 'SELECT {{allowed_coluns}} FROM `' . User::TABLE_NAME . '` WHERE id = \'' . $desc . '\' LIMIT 1';
+            $allowed_coluns = get_allowed_columns($desc);
             $result = $connection->query($prepared_query);
             if ($result->rowCount() === 1) {
                 $this->original = $result->fetchObject();
@@ -49,6 +87,9 @@ class User extends Base_Model {
             assert(array_key_exists('password_hash', $desc));
             $prepared_query = 'SELECT '
             $connection->
+        }
+        if (isset($this->current->id)) {
+            // get relations
         }
     }
 
@@ -75,6 +116,10 @@ class User extends Base_Model {
 
     private function is_pristine () {
 
+    }
+
+    public function __clone () {
+        echo 'HUKHUK';
     }
 
 

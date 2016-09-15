@@ -2,6 +2,7 @@
 
 require 'vendor/autoload.php';
 require 'utils/utils.php';
+require 'utils/constants.php';
 
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
@@ -43,16 +44,72 @@ $app->get('/hello', function (Request $request, Response $response) {
     return $response;
 });
 $app->get('/hello/{name}', function (Request $request, Response $response) {
-    $name = $request->getAttribute('name');
     $response->getBody()->write("Hello, $name");
 
     return $response;
 });
 
-$app->get('/salt', function (Request $request, Response $response) {
-    $salt = [1,3,5,7,9,10,13,25,26,27,28,32];
+$app->post('/users', function (Request $request, Response $response, $args) {
+    $tier = $request->getParsedBody();
+    // get permissions
+    $allowed_actions = User::PERMISSIONS['entity'];
+    $is_allowed = false;
+    // is creation allowed in general?
+    if (array_key_exists(PERMISSION_CREATE, $allowed_actions) {
+        $allowed_roles = $allowed_actions[PERMISSION_CREATE];
+        // is creation
+        if (array_key_exists(PERMISSION_NONE, $allowed_roles)) {
+            // no, is not allowed
+        } else if (array_key_exists(PEMISSION_ALL, $allowed_roles)) {
+            $is_allowed = true;
+        } else {
+            // get current user by fiddling with the user auth stuff
+            $is_allowed = true;
+        }
+    }
+    if ($is_allowed) {
+
+    }
+    // create model
+
+    $response->getBody()->write(var_dump($tier));
+    return $response;
+});
+
+$app->get('/users', function (Request $request, Response $response, $args) {
+    return $reponse;
+});
+
+$app->get('/users/{id}', function (Request $request, Response $response, $args) {
+    return $reponse;
+});
+
+$app->put('/users/{id}', function (Request $request, Response $response, $args) {
+    return $reponse;
+});
+
+$app->patch('/users/{id}', function (Request $request, Response $response, $args) {
+    return $reponse;
+});
+
+$app->delete('/users/{id}', function (Request $request, Response $response, $args) {
+    return $reponse;
+});
+
+$app->get('/token', function (Request $request, Response $response) {
+    $auth = $request->getParsedBody();
+
+    if (isset($auth->email) && isset($auth->password_hash) && isset($auth->datetime)) {
+        new User($container['db'], $auth);
+    }
+
     $time = microtime();
-    $response->getBody()->write(hash('sha256', $time));
+    $length = strlen($time);
+    foreach (SALT as $crumb) {
+        $time .= $length > $crumb ? substr($time, $crumb, 1) : '';
+    }
+
+    $response->getBody()->write($time . ': ' . hash('sha256', $time));
     return $response;
 });
 $app->run();

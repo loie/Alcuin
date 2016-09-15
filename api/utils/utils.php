@@ -37,4 +37,11 @@
         return $hashed;
     }
 
+    function get_model ($model_name, $desc, $connection) {
+    }
+
+    function create_model () {
+
+    }
+
 ?>
