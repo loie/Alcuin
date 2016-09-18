@@ -25,11 +25,16 @@ There are only a few simple steps to take:
 
 ##User Guide
 ### Installation
+Since Alcuin the created REST service is based on Laravel, you will need composer installed. If you do not have composer installed on your system, Alcuin will try to install composer via command shell 
 ### Setup
 ### Database Configuration
 ### Other General Settings
 ### Architecture
-#### Models
-##### Properties
+#### Model Properties
 ##### Permissions
-##### Relations
+#### Permissions
+##### Create
+##### Read
+##### Update
+##### Delete
+#### Relations
