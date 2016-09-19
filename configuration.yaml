@@ -9,6 +9,8 @@ web:
     dir_root: api
     url_root: /
     assets: assets
+    login_url: http://example.com/login
+    signup_url:  http://example.com/signup
 salt: [2, 3, 5, 7, 8, 13, 14, 20]
 architecture:
     use_for_permission: role
