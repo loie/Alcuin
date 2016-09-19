@@ -1,6 +1,7 @@
 .DS_Store
 .svn
 .sublime-project
+reference/api/
 configuration.json
+reference/vendor/*
 reference/api/vendor/*
-reference/auth/vendor/*
