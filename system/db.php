@@ -25,7 +25,9 @@
             // auth token column for models used for authentification
             if ($configuration->architecture->use_for_auth === $model_name) {
                 $line = "`token` CHAR(64) CHARACTER SET 'utf8'";
-                array_push($statements, $line);   
+                array_push($statements, $line);
+                $line = "`timestamp` TIMESTAMP NULL";
+                array_push($statements, $line);
             }
 
             // set primary key
@@ -472,7 +474,7 @@
                     $default = "'" . $properties->default . "'";
                     break;
                 case 'hash':
-                    $line .= "CHAR(40) CHARACTER SET 'utf8'";
+                    $line .= "CHAR(64) CHARACTER SET 'utf8'";
                     break;
                 case 'datetime':
                     $line .= 'DATETIME';

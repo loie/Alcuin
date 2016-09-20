@@ -34,36 +34,38 @@ $controllerNames = [
     ANSWERS => 'Answer'
 ];
 
-function getRouteConfig ($methodName, $controllerName) {
-    return [
-        'middleware' => ['oldage'],
-        'uses' => $controllerName . 'Controller@' . $methodName
-    ];
+function getRouteConfig ($methodName, $controllerName, $middleware = null) {
+    $injection = [];
+    $injection['uses'] = $controllerName . 'Controller@' . $methodName;
+    if (is_array($middleware) or is_string($middleware)) {
+        $injection['middleware'] = $middleware;
+    }
+    return $injection;
 }
 
-$app->post('/users', getRouteConfig('post', $controllerNames[USERS]));
+$app->post('/tokens', getRouteConfig('create', 'Token'));
+$app->post('/users', getRouteConfig('create', $controllerNames[USERS]));
 
 foreach ($resources as $resource) {
     $controllerName = $controllerNames[$resource];
     $app->group([
         // 'middleware' => 'auth',
         'prefix' => $resource], function () use ($app, $controllerName) {
+            $middleware = ['auth'];
             if ($controllerName !== 'User') {
-                $app->post('', getRouteConfig('post', $controllerName));
+                $app->post('', getRouteConfig('create', $controllerName, $middleware));
             }
 
-            $app->get('', getRouteConfig('get', $controllerName));
-            $app->get(ID, getRouteConfig('getId', $controllerName));
+            $app->get('', getRouteConfig('all', $controllerName, $middleware));
+            $app->get(ID, getRouteConfig('read', $controllerName, $middleware));
 
-            $app->put(ID, getRouteConfig('putId', $controllerName));
+            $app->put(ID, getRouteConfig('update', $controllerName, $middleware));
+            $app->delete(ID, getRouteConfig('delete', $controllerName, $middleware));
+            $app->patch(ID, getRouteConfig('patch', $controllerName, $middleware));
 
-            $app->delete('', getRouteConfig('delete', $controllerName));
-            $app->delete(ID, getRouteConfig('deleteId', $controllerName));
 
-            $app->patch(ID, getRouteConfig('patchId', $controllerName));
-
-            $app->options('', getRouteConfig('options', $controllerName));
-            $app->options(ID, getRouteConfig('optionsId', $controllerName));
+            $app->options('', getRouteConfig('optionsAll', $controllerName, $middleware));
+            $app->options(ID, getRouteConfig('options', $controllerName, $middleware));
     });
 }
 
