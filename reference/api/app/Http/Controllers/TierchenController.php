@@ -3,13 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// use Illuminate\Routing\Controller;
 
-class QuestionController extends Controller
+class TierchenController extends Controller
 {
-    const MODEL = 'App\Question';
-
-    use RESTActions;
     /**
      * Create a new controller instance.
      *
@@ -19,5 +15,10 @@ class QuestionController extends Controller
     {
         //
     }
+
+    public function create (Request $request) {
+        return response()->json(['tierchen' => 'asdfasdf']);
+    }
+
     //
 }

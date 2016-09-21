@@ -34,14 +34,14 @@ trait RESTActions {
     public function create (Request $request)
     {
         $m = self::MODEL;
-        $this->validate($request, $m::$rules);
+        $this->validate($request, $m::$VALIDATION);
         return $this->respond('created', $m::create($request->all()));
     }
 
     public function update (Request $request, $id)
     {
         $m = self::MODEL;
-        $this->validate($request, $m::$rules);
+        $this->validate($request, $m::$VALIDATION);
         $model = $m::find($id);
         if(is_null($model)){
             return $this->respond('not_found');

@@ -3,10 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// use Illuminate\Routing\Controller;
-
 use App\User;
-use RESTAction;
 
 class UserController extends Controller
 {
@@ -39,6 +36,22 @@ class UserController extends Controller
         $user->password = hash('sha256', self::spice($password_hash));
         $user->name = $name;
         $user->save();
+
+        $value = [
+            'data' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'name' => $user->name
+            ],
+            'links' => [
+                'self' => $request->fullUrl() . '/' . $user->id
+            ],
+            'relationships' => [
+                'token' => [
+                ]
+            ]
+        ];
+        return response()->json($value, 201);
     }
 
     public function read ($id) {

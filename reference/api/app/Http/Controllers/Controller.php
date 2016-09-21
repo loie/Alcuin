@@ -8,7 +8,7 @@ class Controller extends BaseController
 {
     //
     protected static $SALT = [1, 2, 4, 5, 6, 9, 10, 13, 15, 18, 22];
-    const PEPPER = ':)';
+    const PEPPER = '___[]+++';
 
     protected static function spice ($string) {
         $i = 0;

@@ -2,25 +2,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// use Illuminate\Routing\Controller;
-
 use App\User;
 
 class TokenController extends Controller
 {
-    // use RESTAction;
-
-
-    // /**
-    //  * Create a new controller instance.
-    //  *
-    //  * @return void
-    //  */
-    // public function __construct()
-    // {
-    //     //
-    // }
-
     public function create (Request $request) {
         // echo hash('sha256', 'lorenz.merdian@googlemail.combernie');
         $email = $request->hasHeader('X-email') ? $request->header('X-email') : null;
@@ -41,7 +26,7 @@ class TokenController extends Controller
                     'data' => [
                         'id' => $user->id,
                         'token' => $user->token,
-                        'timestamp' => $user->timestamp
+                        'expires' => $user->expires
                     ],
                     'relationships' => [
                         'user' => [
@@ -49,7 +34,6 @@ class TokenController extends Controller
                                 'id' => $user->id,
                                 'name' => $user->name,
                                 'email' => $user->email,
-                                'token' => $user->token
                             ]
                         ]
                     ]

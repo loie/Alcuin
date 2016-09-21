@@ -67,10 +67,6 @@ $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
 ]);
 
-$app->routeMiddleware([
-    'oldage' => App\Http\Middleware\OldAge::class
-]);
-
 /*
 |--------------------------------------------------------------------------
 | Register Service Providers

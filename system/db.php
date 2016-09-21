@@ -26,7 +26,7 @@
             if ($configuration->architecture->use_for_auth === $model_name) {
                 $line = "`token` CHAR(64) CHARACTER SET 'utf8'";
                 array_push($statements, $line);
-                $line = "`timestamp` TIMESTAMP NULL";
+                $line = "`expires` TIMESTAMP NULL";
                 array_push($statements, $line);
             }
 
