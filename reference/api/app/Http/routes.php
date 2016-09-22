@@ -20,7 +20,7 @@ function getRouteConfig ($methodName, $controllerName, $middleware = null) {
     if (is_array($middleware) or is_string($middleware)) {
         $injection['middleware'] = $middleware;
     }
-    print_r($injection);
+    // print_r($injection);
     return $injection;
 }
 
@@ -29,13 +29,11 @@ $app->post('/users', getRouteConfig('create', $controllerNames[USERS]));
 
 foreach ($resources as $resource) {
     $controllerName = $controllerNames[$resource];
-    // $app->group(,
-        // function () use ($app, $controllerName) {
-            // $middleware = ['auth'];
-            $middleware = null;
-            if ($controllerName !== 'User') {
-                $app->post($resource, getRouteConfig('create', $controllerName, $middleware));
-            }
+
+    $middleware = ['auth'];
+    if ($controllerName !== 'User') {
+        $app->post($resource, getRouteConfig('create', $controllerName, $middleware));
+    }
 
             // $app->get('', getRouteConfig('all', $controllerName, $middleware));
             // $app->get(ID, getRouteConfig('read', $controllerName, $middleware));
@@ -51,6 +49,6 @@ foreach ($resources as $resource) {
     // );
 }
 
-print_r($app);
+// print_r($app);
 
 ?>

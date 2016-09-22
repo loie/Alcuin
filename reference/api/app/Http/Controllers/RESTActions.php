@@ -1,6 +1,8 @@
 <?php namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 
 trait RESTActions {
@@ -35,7 +37,15 @@ trait RESTActions {
     {
         $m = self::MODEL;
         $this->validate($request, $m::$VALIDATION);
-        return $this->respond('created', $m::create($request->all()));
+        $properties_prepared = $request->all();
+        $properties = [];
+
+        // mockup: use real value
+        foreach ($properties_prepared as $key => $value) {
+            $properties[$key] = $value;
+        }
+        $properties['user_id'] = 2;
+        return $this->respond('created', $m::create($properties));
     }
 
     public function update (Request $request, $id)
@@ -46,6 +56,7 @@ trait RESTActions {
         if(is_null($model)){
             return $this->respond('not_found');
         }
+        if (Gate::allowes())
         $model->update($request->all());
         return $this->respond('done', $model);
     }

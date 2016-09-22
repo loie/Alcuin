@@ -65,6 +65,7 @@ $app->singleton(
 
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
+    'can' => App\Http\Middleware\Authorize::class
 ]);
 
 /*
@@ -80,6 +81,7 @@ $app->routeMiddleware([
 
 // $app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
+$app->register(App\Providers\AuthorizationServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 
 /*

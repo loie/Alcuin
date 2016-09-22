@@ -4,12 +4,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model {
 
+    const CREATION_ACTION = 'update-question';
+
     protected $fillable = [];
 
     protected $dates = [];
 
-    public static $rules = [
-        // Validation rules
+    public static $VALIDATION = [
+        'title' => 'required|min:3|max:255',
+        'text' => 'required|min:10'
     ];
 
     public $timestamps = false;

@@ -19,7 +19,7 @@ class TokenController extends Controller
                         'password' => $spiced_password_hash
                     ])->firstOrFail();
                 $timestamp = date('Y-m-d H:i:s');
-                $user->timestamp = $timestamp;
+                $user->expires = $timestamp;
                 $user->token = hash('sha256', $spiced_password_hash . $timestamp);
                 $user->save();
                 $value = [
