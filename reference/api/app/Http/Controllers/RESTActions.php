@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -37,15 +38,19 @@ trait RESTActions {
     {
         $m = self::MODEL;
         $this->validate($request, $m::$VALIDATION);
-        $properties_prepared = $request->all();
-        $properties = [];
 
-        // mockup: use real value
-        foreach ($properties_prepared as $key => $value) {
-            $properties[$key] = $value;
+        $model = new $m;
+
+        $model->fill($request->input());
+        if (in_array('user', $m::$RELATIONSHIPS['belongs_to'])) {
+            $model->user()->associate(Auth::user());
         }
-        $properties['user_id'] = 2;
-        return $this->respond('created', $m::create($properties));
+
+        $model->save();
+        $value = [
+            'data' => $model->makeHidden('user_id')->toArray()
+        ];
+        return $this->respond('created', $value);
     }
 
     public function update (Request $request, $id)

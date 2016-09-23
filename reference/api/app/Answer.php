@@ -12,17 +12,15 @@ class Question extends Model {
 
     protected $fillable = ['title', 'text'];
     protected $guarded = [];
-    protected $visible = ['title', 'text', 'user', 'user', 'answers'];
+    protected $visible = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvoted', 'dummy', 'user', 'question'];
     protected $dates = [];
 
     public static $VALIDATION = [
-        'title' => 'required|min:3|max:255',
         'text' => 'required|min:10'
     ];
 
     public static $RELATIONSHIPS = [
-        'belongs_to' => ['user'],
-        'has_many' => ['answers'],
+        'belongs_to' => ['user', 'answer'],
         'has_and_belongs_to_many' => ['tags']
     ];
 
