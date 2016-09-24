@@ -2,7 +2,8 @@
 
 // other models
 use App\User;
-use App\Answer;
+use App\Question;
+use App\Tag;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,8 +27,12 @@ class Question extends Model {
 
     public $timestamps = false;
 
-    public function answers () {
-        return $this->hasMany('App\Answer');
+    public function questions () {
+        return $this->hasMany('App\Question');
+    }
+
+    public function tags () {
+        return $this->hasManyThrough('App\Tag');
     }
 
     public function user () {
