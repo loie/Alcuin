@@ -8,6 +8,26 @@ use Illuminate\Support\Facades\Gate;
 
 trait RESTActions {
 
+    private function getGateName (Request $request, $model) {
+        $gateName = null;
+        switch ($request->method()) {
+            'GET': 
+                $gateName = 'read';
+                break;
+            'POST':
+                $gateName = 'create';
+                break;
+            'PUT':
+                $gateName = 'update';
+                break;
+            'DELETE':
+                $gateName = 'delete';
+                break;
+            default:
+                break;
+        }
+    }
+
     protected $statusCodes = [
         'done' => 200,
         'created' => 201,
