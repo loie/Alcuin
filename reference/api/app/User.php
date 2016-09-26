@@ -32,6 +32,20 @@ class User extends Model implements
         'token',
         'timestamp'
     ];
+
+    public function roles () {
+        return $this->belongsToMany('App\Role', 'users_roles', 'user_id', 'role_id');
+    }
+
+
+    public function answers () {
+        return $this->hasMany('App\Answer');
+    }
+
+    public function user () {
+        return $this->belongsTo('App\User');
+    }
+
     public $timestamps = false;
 
 }

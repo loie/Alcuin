@@ -6,32 +6,25 @@ use App\Answer;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Question extends Model {
+class Role extends Model {
 
-    protected $fillable = ['title', 'text'];
+    protected $fillable = ['name'];
     protected $guarded = [];
-    protected $visible = ['title', 'text', 'user', 'user', 'answers'];
+    protected $visible = ['name'];
     protected $dates = [];
 
     public static $VALIDATION = [
-        'title' => 'required|min:3|max:255',
-        'text' => 'required|min:10'
+        'type' => 'required|min:3|max:255',
     ];
 
     public static $RELATIONSHIPS = [
-        'belongs_to' => ['user'],
-        'has_many' => ['answers'],
-        'has_and_belongs_to_many' => ['tags']
+        'has_and_belongs_to_many' => ['users']
     ];
 
     public $timestamps = false;
 
-    public function answers () {
-        return $this->hasMany('App\Answer');
-    }
-
-    public function user () {
-        return $this->belongsTo('App\User');
+    public function users () {
+        return $this->belongsToMany('App\User', 'users_roles', 'role_id', 'user_id');
     }
 
     // public static $rules = [
