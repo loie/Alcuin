@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\User;
-use App\Post;
+use App\Role;
 
 class AnswerPolicy
 {
@@ -14,7 +14,7 @@ class AnswerPolicy
      * @param  \App\Post  $post
      * @return bool
      */
-    public function update(User $user, Post $post)
+    public function create(User $user, Post $post)
     {
         return $user->id === $post->user_id;
     }

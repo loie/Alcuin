@@ -7,32 +7,31 @@ const QUESTIONS = '/questions';
 const ANSWERS = '/answers';
 
 $resources = [USERS, TAGS, QUESTIONS, ANSWERS];
-$controllerNames = [
+$names = [
     USERS => 'User',
     TAGS => 'Tag',
     QUESTIONS => 'Question',
     ANSWERS => 'Answer'
 ];
 
-function getRouteConfig ($methodName, $controllerName, $middleware = null) {
+function getRouteConfig ($methodName, $name, $middleware = null) {
     $injection = [];
-    $injection['uses'] =  $controllerName . 'Controller@' . $methodName;
+    $injection['uses'] =  $name . 'Controller@' . $methodName;
     if (is_array($middleware) or is_string($middleware)) {
         $injection['middleware'] = $middleware;
     }
-    // print_r($injection);
     return $injection;
 }
 
 $app->post('/tokens', getRouteConfig('create', 'Token'));
-$app->post('/users', getRouteConfig('create', $controllerNames[USERS]));
+$app->post('/users', getRouteConfig('create', $names[USERS]));
 
 foreach ($resources as $resource) {
-    $controllerName = $controllerNames[$resource];
+    $name = $names[$resource];
 
     $middleware = ['auth'];
-    if ($controllerName !== 'User') {
-        $app->post($resource, getRouteConfig('create', $controllerName, $middleware));
+    if ($name !== 'User') {
+        $app->post($resource, getRouteConfig('create', $name, $middleware));
     }
 
             // $app->get('', getRouteConfig('all', $controllerName, $middleware));

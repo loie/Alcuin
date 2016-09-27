@@ -14,6 +14,9 @@ class Authorize
      */
     protected $auth;
 
+
+    protected static $PLURALS = [];
+
     /**
      * Create a new middleware instance.
      *
@@ -23,6 +26,34 @@ class Authorize
     public function __construct(Auth $auth)
     {
         $this->auth = $auth;
+    }
+
+
+   protected static function GATENAME ($request) {
+        $gateName = null;
+        switch ($request->method()) {
+            case 'GET':
+                $gateName = 'read';
+                break;
+            case 'POST':
+                $gateName = 'create';
+                break;
+            case 'PUT':
+                $gateName = 'update';
+                break;
+            case 'DELETE':
+                $gateName = 'delete';
+                break;
+            default:
+                break;
+        }
+        $segments = $request->segments();
+        $length = count($segments);
+        $model = is_numeric($segments[$length - 1]) ? $segments[$length - 2] : $segments[$length - 1];
+        $modelName = strtolower($model);
+        $modelName = isset(self::$PLURALS[$modelName]) ? : substr($modelName, 0, strlen($modelName) - 1);
+        $gateName .= '-' . $modelName;
+        return $gateName;
     }
 
     /**
@@ -35,8 +66,11 @@ class Authorize
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if ($this->auth->guard($guard)->guest()) {
-            return response('Unauthorized.', 401);
+        $user = $request->user();
+        $gateName = self::GATENAME($request);
+        var_dump($user->can($gateName));
+        if ($user->cant($gateName)) {
+            abort(401);
         }
 
         return $next($request);

@@ -8,29 +8,7 @@ use Illuminate\Support\Facades\Gate;
 
 trait RESTActions {
 
-    private function getGateName (Request $request, $model) {
-        $gateName = null;
-        switch ($request->method()) {
-            case 'GET':
-                $gateName = 'read';
-                break;
-            case 'POST':
-                $gateName = 'create';
-                break;
-            case 'PUT':
-                $gateName = 'update';
-                break;
-            case 'DELETE':
-                $gateName = 'delete';
-                break;
-            default:
-                break;
-        }
-        $modelNames = explode('\\', $model);
-        $modelName = strtolower($modelNames[count($modelNames) - 1]);
-        $gateName .= '-' . $modelName;
-        return $gateName;
-    }
+    
 
     protected $statusCodes = [
         'done' => 200,
@@ -65,26 +43,16 @@ trait RESTActions {
 
         $model = new $m;
 
-        $gateName = $this->getGateName($request, $m);
-        if (Gate::allows($gateName, $this)) {
-            echo 'allowed';
-            $model->fill($request->input());
-            if (in_array('user', $m::$RELATIONSHIPS['belongs_to'])) {
-                $model->user()->associate(Auth::user());
-            }
-
-            $model->save();
-            $value = [
-                'data' => $model->makeHidden('user_id')->toArray()
-            ];
-            return $this->respond('created', $value);
-        } else {
-            $value = [
-                'error' => 'Not allowed. This user has no permission to create this resource.'
-            ];
-            return $this->respond('not_allowed', $value);
+        $model->fill($request->input());
+        if (in_array('user', $m::$RELATIONSHIPS['belongs_to'])) {
+            $model->user()->associate(Auth::user());
         }
 
+        $model->save();
+        $value = [
+            'data' => $model->makeHidden('user_id')->toArray()
+        ];
+        return $this->respond('created', $value);
     }
 
     public function update (Request $request, $id)
