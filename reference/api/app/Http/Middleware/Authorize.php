@@ -3,6 +3,11 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Question as Question;
+use App\Answer as Answer;
+use App\Role as Role;
+use App\User as User;
+use App\Tag as Tag;
 use Illuminate\Contracts\Auth\Factory as Auth;
 
 class Authorize
@@ -28,12 +33,21 @@ class Authorize
         $this->auth = $auth;
     }
 
+    protected static function MODEL_CLASS_NAME ($request) {
+        $segments = $request->segments();
+        $length = count($segments);
+        $model = is_numeric($segments[$length - 1]) ? $segments[$length - 2] : $segments[$length - 1];
+        $modelName = strtolower($model);
+        $modelName = isset(self::$PLURALS[$modelName]) ? self::$PLURALS[$modelName] : substr($modelName, 0, strlen($modelName) - 1);
+        return $modelName;
+    }
+
 
    protected static function GATENAME ($request) {
         $gateName = null;
         switch ($request->method()) {
             case 'GET':
-                $gateName = 'read';
+                $gateName = 'view';
                 break;
             case 'POST':
                 $gateName = 'create';
@@ -47,12 +61,6 @@ class Authorize
             default:
                 break;
         }
-        $segments = $request->segments();
-        $length = count($segments);
-        $model = is_numeric($segments[$length - 1]) ? $segments[$length - 2] : $segments[$length - 1];
-        $modelName = strtolower($model);
-        $modelName = isset(self::$PLURALS[$modelName]) ? : substr($modelName, 0, strlen($modelName) - 1);
-        $gateName .= '-' . $modelName;
         return $gateName;
     }
 
@@ -68,9 +76,10 @@ class Authorize
     {
         $user = $request->user();
         $gateName = self::GATENAME($request);
-        var_dump($user->can($gateName));
-        if ($user->cant($gateName)) {
-            abort(401);
+        $className = 'App\\' . ucfirst(self::MODEL_CLASS_NAME($request));
+        if ($user->cannot($gateName, $className)) {
+            $answer = ['error' => 'No permissions to do this'];
+            return response($answer, 403);
         }
 
         return $next($request);

@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Gate;
 
 trait RESTActions {
 
-    
-
     protected $statusCodes = [
         'done' => 200,
         'created' => 201,

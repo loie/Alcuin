@@ -22,16 +22,18 @@ function getRouteConfig ($methodName, $name, $middleware = null) {
     }
     return $injection;
 }
-
 $app->post('/tokens', getRouteConfig('create', 'Token'));
 $app->post('/users', getRouteConfig('create', $names[USERS]));
 
-foreach ($resources as $resource) {
-    $name = $names[$resource];
 
-    $middleware = ['auth'];
-    if ($name !== 'User') {
-        $app->post($resource, getRouteConfig('create', $name, $middleware));
+foreach (config('names.path') as $id => $path) {
+    // $name = conf('names.path');
+    // $names[$resource];
+    $className = config('names.class.' . $id);
+
+    $middleware = ['auth', 'can'];
+    if ($className !== 'User') {
+        $app->post($path, getRouteConfig('create', $className, $middleware));
     }
 
             // $app->get('', getRouteConfig('all', $controllerName, $middleware));

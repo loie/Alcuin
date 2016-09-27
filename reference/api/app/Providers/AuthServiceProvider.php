@@ -2,8 +2,16 @@
 
 namespace App\Providers;
 
+use App\Answer;
+use App\Question;
+use App\Tag;
+use App\Role;
 use App\User;
-
+use App\Policies\AnswerPolicy;
+use App\Policies\QuestionPolicy;
+use App\Policies\TagPolicy;
+use App\Policies\RolePolicy;
+use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -33,7 +41,6 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(Tag::class, TagPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
-
 
         Auth::viaRequest('api', function ($request) {
             $user = null;

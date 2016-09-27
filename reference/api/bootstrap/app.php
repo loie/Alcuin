@@ -27,6 +27,28 @@ $app->withFacades();
 
 $app->withEloquent();
 
+
+/* Setup configuration */
+
+config([
+    'names' => [
+        'path' => [
+            'user' => '/users',
+            'tag' => '/tags',
+            'question' => '/questions',
+            'answer' => '/answers'
+        ],
+        'class' => [
+            'user' => 'User',
+            'tag' => 'Tag',
+            'question' => 'Question',
+            'answer' => 'Answer'
+        ]
+    ]
+]);
+
+
+
 /*
 |--------------------------------------------------------------------------
 | Register Container Bindings
@@ -59,13 +81,13 @@ $app->singleton(
 |
 */
 
-$app->middleware([
-   App\Http\Middleware\Authorize::class
-]);
+// $app->middleware([
+//    App\Http\Middleware\Authorize::class
+// ]);
 
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
-    // 'can' => App\Http\Middleware\Authorize::class
+    'can' => App\Http\Middleware\Authorize::class
 ]);
 
 /*

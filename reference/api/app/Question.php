@@ -10,7 +10,7 @@ class Question extends Model {
 
     protected $fillable = ['title', 'text'];
     protected $guarded = [];
-    protected $visible = ['title', 'text', 'user', 'user', 'answers'];
+    protected $visible = ['title', 'text', 'user', 'tags', 'answers'];
     protected $dates = [];
 
     public static $VALIDATION = [

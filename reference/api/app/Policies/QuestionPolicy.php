@@ -7,14 +7,14 @@ use App\Role;
 
 class QuestionPolicy
 {
-    public function create(User $user, Question $question) {
-        $isAllowed = true;
-        // foreach ($user->roles as $role) {
-        //     if (in_array($role->type, ['user', 'admin'])) {
-        //         $isAllowed = true;
-        //         break;
-        //     }
-        // }
+    public function create(User $user) {
+        $isAllowed = false;
+        foreach ($user->roles as $role) {
+            if (in_array($role->type, ['user', 'admin'])) {
+                $isAllowed = true;
+                break;
+            }
+        }
         return $isAllowed;
     }
 
