@@ -24,7 +24,7 @@ trait RESTActions {
         return $this->respond('done', $m::all());
     }
 
-    public function read ($id)
+    public function view ($id)
     {
         $m = self::MODEL;
         $model = $m::find($id);
@@ -45,10 +45,36 @@ trait RESTActions {
         if (in_array('user', $m::$RELATIONSHIPS['belongs_to'])) {
             $model->user()->associate(Auth::user());
         }
-
         $model->save();
+        $model->makeHidden('user_id')->toArray();
         $value = [
-            'data' => $model->makeHidden('user_id')->toArray()
+            'data' => [
+                'type' => $m::TYPE,
+                'id' => $model->id,
+                'attributes' => $model,
+                'links' => [
+                    'self' => $request->url() . '/' . $model->id
+                ],
+                'relationships' => [
+                    'user' => [
+                        'links' => [
+                            'self' => '',
+                            'related' => ''
+                        ],
+                        'data' => [
+                            'id' => $model->user->id,
+                            'type' => 'user'
+                        ]
+                    ],
+                ]
+            ],
+            'included' => [
+                [
+                    'type' => 'user',
+                    'id' => $model->user->id,
+                    'attributes' => $model->user
+                ]
+            ]
         ];
         return $this->respond('created', $value);
     }
@@ -61,7 +87,7 @@ trait RESTActions {
         if(is_null($model)){
             return $this->respond('not_found');
         }
-        if (Gate::allowes())
+        // if (Gate::allowes())
         $model->update($request->all());
         return $this->respond('done', $model);
     }

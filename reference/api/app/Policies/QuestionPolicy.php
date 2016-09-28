@@ -19,14 +19,38 @@ class QuestionPolicy
     }
 
     public function view (User $user, Question $question) {
-        return $user->id === $post->user_id;
+        $isAllowed = false;
+        foreach ($user->roles as $role) {
+            if (in_array($role->type, ['user', 'admin'])) {
+                $isAllowed = true;
+                break;
+            }
+        }
+        $isAllowed = ($user->id === $question->user_id);
+        return $isAllowed;
     }
 
     public function update (User $user, Question $question) {
-        return $user->id === $post->user_id;
+        $isAllowed = false;
+        foreach ($user->roles as $role) {
+            if (in_array($role->type, ['user', 'admin'])) {
+                $isAllowed = true;
+                break;
+            }
+        }
+        $isAllowed = ($user->id === $question->user_id);
+        return $isAllowed;
     }
     
     public function delete (User $user, Question $question) {
-        return $user->id === $post->user_id;
+        $isAllowed = false;
+        foreach ($user->roles as $role) {
+            if (in_array($role->type, ['user', 'admin'])) {
+                $isAllowed = true;
+                break;
+            }
+        }
+        $isAllowed = ($user->id === $question->user_id);
+        return $isAllowed;
     }
 }

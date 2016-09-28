@@ -34,15 +34,24 @@ config([
     'names' => [
         'path' => [
             'user' => '/users',
+            'role' => '/roles',
             'tag' => '/tags',
             'question' => '/questions',
             'answer' => '/answers'
         ],
         'class' => [
             'user' => 'User',
+            'role' => 'Role',
             'tag' => 'Tag',
             'question' => 'Question',
             'answer' => 'Answer'
+        ],
+        'plural' => [
+            'user' => 'users',
+            'role' => 'roles',
+            'tag' => 'tags',
+            'question' => 'questions',
+            'answer' => 'answers'
         ]
     ]
 ]);
@@ -103,6 +112,7 @@ $app->routeMiddleware([
 
 // $app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
+$app->register(App\Providers\AuthorizationServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 
 /*

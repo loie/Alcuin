@@ -7,9 +7,9 @@ use App\Post;
 
 class UserPolicy
 {
-    public function create(User $user, Post $post)
-    {
-        return $user->id === $post->user_id;
+
+    public function create (User $user) {
+        return true;
     }
 
     public function view (User $user, Answer $answer) {

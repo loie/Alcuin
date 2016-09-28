@@ -7,13 +7,13 @@ use App\Tag;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Question extends Model {
+class Answer extends Model {
 
-    const CREATION_ACTION = 'update-question';
+    const TYPE = 'question';
 
-    protected $fillable = ['title', 'text'];
+    protected $fillable = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvoted', 'dummy'];
     protected $guarded = [];
-    protected $visible = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvoted', 'dummy', 'user', 'question'];
+    protected $visible = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvoted', 'dummy'];
     protected $dates = [];
 
     public static $VALIDATION = [

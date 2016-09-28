@@ -8,6 +8,7 @@ use App\Answer as Answer;
 use App\Role as Role;
 use App\User as User;
 use App\Tag as Tag;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Contracts\Auth\Factory as Auth;
 
 class Authorize
@@ -18,10 +19,6 @@ class Authorize
      * @var \Illuminate\Contracts\Auth\Factory
      */
     protected $auth;
-
-
-    protected static $PLURALS = [];
-
     /**
      * Create a new middleware instance.
      *
@@ -32,18 +29,17 @@ class Authorize
     {
         $this->auth = $auth;
     }
-
-    protected static function MODEL_CLASS_NAME ($request) {
-        $segments = $request->segments();
-        $length = count($segments);
-        $model = is_numeric($segments[$length - 1]) ? $segments[$length - 2] : $segments[$length - 1];
-        $modelName = strtolower($model);
-        $modelName = isset(self::$PLURALS[$modelName]) ? self::$PLURALS[$modelName] : substr($modelName, 0, strlen($modelName) - 1);
-        return $modelName;
-    }
-
-
-   protected static function GATENAME ($request) {
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string|null  $guard
+     * @return mixed
+     */
+    public function handle($request, Closure $next, $guard = null)
+    {
+        $user = $request->user();
         $gateName = null;
         switch ($request->method()) {
             case 'GET':
@@ -61,27 +57,23 @@ class Authorize
             default:
                 break;
         }
-        return $gateName;
-    }
-
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @param  string|null  $guard
-     * @return mixed
-     */
-    public function handle($request, Closure $next, $guard = null)
-    {
-        $user = $request->user();
-        $gateName = self::GATENAME($request);
-        $className = 'App\\' . ucfirst(self::MODEL_CLASS_NAME($request));
-        if ($user->cannot($gateName, $className)) {
-            $answer = ['error' => 'No permissions to do this'];
+        $segments = $request->segments();
+        $length = count($segments);
+        $model = is_numeric($segments[$length - 1]) ? $segments[$length - 2] : $segments[$length - 1];
+        $pathName = strtolower($model);
+        $id = array_search($pathName, config('names.plural'));
+        $className = 'App\\' . config('names.class.' . $id);
+        $answer = ['error' => 'No permissions to do this'];
+        var_dump($user, $gateName, $className);
+        if ($user === null) {
+                echo 'asdf';
+            if ($gateName !== 'create' || $className !== 'App\\User') {
+                // var_dump($user, $gateName, $className, 'App\User');
+                // return response($answer, 403);
+            }
+        } else if ($user->cannot($gateName, $className)) {
             return response($answer, 403);
         }
-
         return $next($request);
     }
 }

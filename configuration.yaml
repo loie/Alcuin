@@ -236,8 +236,7 @@ architecture:
                             - admin
                 answers:
                     model: answer
-                    type: belongs_to_and_has_many
-                    via_table: questions_answers
+                    type: has_many
                     permissions:
                         create:
                             - user
@@ -302,10 +301,9 @@ architecture:
                         delete:
                             - self
                             - admin
-                questions:
+                question:
                     model: question
-                    type: belongs_to_and_has_many
-                    via_table: questions_answers
+                    type: belongs_to
                     permissions:
                         create:
                             - user

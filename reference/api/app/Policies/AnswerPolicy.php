@@ -14,21 +14,49 @@ class AnswerPolicy
      * @param  \App\Post  $post
      * @return bool
      */
-    public function create(User $user, Post $post)
+    public function create(User $user)
     {
-        return $user->id === $post->user_id;
+        $isAllowed = false;
+        foreach ($user->roles as $role) {
+            if (in_array($role->type, ['user', 'admin'])) {
+                $isAllowed = true;
+                break;
+            }
+        }
+        return $isAllowed;
     }
 
     public function view (User $user, Answer $answer) {
-        return $user->id === $post->user_id;
+        $isAllowed = false;
+        foreach ($user->roles as $role) {
+            if (in_array($role->type, ['user', 'admin'])) {
+                $isAllowed = true;
+                break;
+            }
+        }
+        return $isAllowed;
     }
 
     public function update (User $user, Answer $answer) {
-        return $user->id === $post->user_id;
+        $isAllowed = false;
+        foreach ($user->roles as $role) {
+            if (in_array($role->type, ['user', 'admin'])) {
+                $isAllowed = true;
+                break;
+            }
+        }
+        return $isAllowed;
     }
     
     public function delete (User $user, Answer $answer) {
-        return $user->id === $post->user_id;
+        $isAllowed = false;
+        foreach ($user->roles as $role) {
+            if (in_array($role->type, ['user', 'admin'])) {
+                $isAllowed = true;
+                break;
+            }
+        }
+        return $isAllowed;
     }
 
 

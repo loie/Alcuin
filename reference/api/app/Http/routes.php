@@ -1,18 +1,6 @@
 <?php
 
 const ID = '{id}';
-const USERS = '/users';
-const TAGS = '/tags';
-const QUESTIONS = '/questions';
-const ANSWERS = '/answers';
-
-$resources = [USERS, TAGS, QUESTIONS, ANSWERS];
-$names = [
-    USERS => 'User',
-    TAGS => 'Tag',
-    QUESTIONS => 'Question',
-    ANSWERS => 'Answer'
-];
 
 function getRouteConfig ($methodName, $name, $middleware = null) {
     $injection = [];
@@ -23,7 +11,7 @@ function getRouteConfig ($methodName, $name, $middleware = null) {
     return $injection;
 }
 $app->post('/tokens', getRouteConfig('create', 'Token'));
-$app->post('/users', getRouteConfig('create', $names[USERS]));
+$app->post('/users', getRouteConfig('create', config('names.class.user')));
 
 
 foreach (config('names.path') as $id => $path) {
@@ -31,10 +19,8 @@ foreach (config('names.path') as $id => $path) {
     // $names[$resource];
     $className = config('names.class.' . $id);
 
-    $middleware = ['auth', 'can'];
-    if ($className !== 'User') {
-        $app->post($path, getRouteConfig('create', $className, $middleware));
-    }
+    $middleware = $className === 'User' ? ['can'] : ['auth', 'can'];
+    $app->post($path, getRouteConfig('create', $className, $middleware));
 
             // $app->get('', getRouteConfig('all', $controllerName, $middleware));
             // $app->get(ID, getRouteConfig('read', $controllerName, $middleware));
