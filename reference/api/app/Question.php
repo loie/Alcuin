@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Question extends Model {
 
     const TYPE = 'question';
-    
+
     protected $fillable = ['title', 'text'];
     protected $guarded = [];
     protected $visible = ['title', 'text'];
@@ -21,9 +21,21 @@ class Question extends Model {
     ];
 
     public static $RELATIONSHIPS = [
-        'belongs_to' => ['user'],
-        'has_many' => ['answers'],
-        'has_and_belongs_to_many' => ['tags']
+        'belongs_to' => [
+            'user' => [
+                'id' => 'user'
+            ]
+        ],
+        'has_many' => [
+            'answers' => [
+                'id' => 'answer'
+            ]
+        ],
+        'belongs_to_and_has_many' => [
+            'tags' => [
+                'id' => 'tag'
+            ]
+        ]
     ];
 
     public $timestamps = false;

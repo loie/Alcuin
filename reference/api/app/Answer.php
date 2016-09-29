@@ -21,55 +21,26 @@ class Answer extends Model {
     ];
 
     public static $RELATIONSHIPS = [
-        'belongs_to' => ['user', 'answer'],
-        'has_and_belongs_to_many' => ['tags']
+        'belongs_to' => [
+            'user' => [
+                'id' => 'user'
+            ],
+            'question' => [
+                'id' => 'question'
+            ]
+        ],
+        'has_many' => [],
+        'belongs_to_and_has_many' => []
     ];
 
     public $timestamps = false;
 
-    public function questions () {
-        return $this->hasMany('App\Question');
-    }
-
-    public function tags () {
-        return $this->hasManyThrough('App\Tag');
+    public function question () {
+        return $this->belongsTo('App\Question');
     }
 
     public function user () {
         return $this->belongsTo('App\User');
     }
-
-    // public static $rules = [
-    //     "name" => "required",
-    //     "age" => "integer|min:13",
-    //     "email" => "email|unique:users,email_address",
-    // ];
-
-    // Relationships
-
-    // public function project()
-    // {
-    //     return $this->belongsTo("App\Project");
-    // }
-
-    // public function accounts()
-    // {
-    //     return $this->hasMany("Tests\Tmp\Account");
-    // }
-
-    // public function owner()
-    // {
-    //     return $this->belongsTo("App\User");
-    // }
-
-    // public function number()
-    // {
-    //     return $this->hasOne("Tests\Tmp\Phone");
-    // }
-
-    // public function tags()
-    // {
-    //     return $this->belongsToMany("Tests\Tmp\Tag")->withTimestamps();
-    // }
 
 }

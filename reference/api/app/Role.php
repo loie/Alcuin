@@ -18,7 +18,7 @@ class Role extends Model {
     ];
 
     public static $RELATIONSHIPS = [
-        'has_and_belongs_to_many' => ['users']
+        'belongs_to_and_has_many' => ['users']
     ];
 
     public $timestamps = false;
@@ -26,38 +26,4 @@ class Role extends Model {
     public function users () {
         return $this->belongsToMany('App\User', 'users_roles', 'role_id', 'user_id');
     }
-
-    // public static $rules = [
-    //     "name" => "required",
-    //     "age" => "integer|min:13",
-    //     "email" => "email|unique:users,email_address",
-    // ];
-
-    // Relationships
-
-    // public function project()
-    // {
-    //     return $this->belongsTo("App\Project");
-    // }
-
-    // public function accounts()
-    // {
-    //     return $this->hasMany("Tests\Tmp\Account");
-    // }
-
-    // public function owner()
-    // {
-    //     return $this->belongsTo("App\User");
-    // }
-
-    // public function number()
-    // {
-    //     return $this->hasOne("Tests\Tmp\Phone");
-    // }
-
-    // public function tags()
-    // {
-    //     return $this->belongsToMany("Tests\Tmp\Tag")->withTimestamps();
-    // }
-
 }

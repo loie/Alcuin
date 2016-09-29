@@ -64,12 +64,9 @@ class Authorize
         $id = array_search($pathName, config('names.plural'));
         $className = 'App\\' . config('names.class.' . $id);
         $answer = ['error' => 'No permissions to do this'];
-        var_dump($user, $gateName, $className);
         if ($user === null) {
-                echo 'asdf';
             if ($gateName !== 'create' || $className !== 'App\\User') {
-                // var_dump($user, $gateName, $className, 'App\User');
-                // return response($answer, 403);
+                return response($answer, 403);
             }
         } else if ($user->cannot($gateName, $className)) {
             return response($answer, 403);
