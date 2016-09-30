@@ -31,6 +31,11 @@ trait RESTActions {
         if(is_null($model)){
             return $this->respond('not_found');
         }
+        $relations = [];
+        $includes = [];
+        $item = get_relation_item_array($request, null, ) //LOL
+        $value = [];
+        $value['relationships'] => $item['relationship_item'];
         return $this->respond('done', $model);
     }
 
