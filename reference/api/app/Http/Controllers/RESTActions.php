@@ -33,7 +33,15 @@ trait RESTActions {
         }
         $relations = [];
         $includes = [];
-        $item = get_relation_item_array($request, null, ) //LOL
+        $all_relations = array_merge($m::$RELATIONSHIPS['belongs_to'], $m::$RELATIONSHIPS['has_many'], $m::$RELATIONSHIPS['belongs_to_and_has_many']);
+        foreach ($all_relations as $name => $description) {
+            $relations = $model->{$name}; // e.g. comments
+            if ($relations !== null) {
+                if (array_key_exists($name, $m::$RELATIONSHIPS['has_many']) || array_key_exists($name, $m::$RELATIONSHIPS['belongs_to_and_has_many'])) {
+                    $relationship_array = [];
+                    foreach($relations as $relation) {
+            $item = get_relation_item_array($request, $description, $relation);
+        }
         $value = [];
         $value['relationships'] => $item['relationship_item'];
         return $this->respond('done', $model);
