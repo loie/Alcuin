@@ -23,7 +23,7 @@ foreach (config('names.path') as $id => $path) {
     $app->post($path, getRouteConfig('create', $className, $middleware));
 
             // $app->get('', getRouteConfig('all', $controllerName, $middleware));
-            // $app->get(ID, getRouteConfig('read', $controllerName, $middleware));
+    $app->get($path . '/' . ID, getRouteConfig('read', $className, $middleware));
 
             // $app->put(ID, getRouteConfig('update', $controllerName, $middleware));
             // $app->delete(ID, getRouteConfig('delete', $controllerName, $middleware));
