@@ -59,17 +59,28 @@ class Authorize
         }
         $segments = $request->segments();
         $length = count($segments);
-        $model = is_numeric($segments[$length - 1]) ? $segments[$length - 2] : $segments[$length - 1];
+        $id = null;
+        if (is_numeric($segments[$length - 1])) {
+            $id = $segments[$length - 1];
+            $model = $segments[$length - 2];
+        } else {
+            $model = $segmentsp[$length - 1];
+        }
         $pathName = strtolower($model);
-        $id = array_search($pathName, config('names.plural'));
-        $className = 'App\\' . config('names.class.' . $id);
+        $stem = array_search($pathName, config('names.plural'));
+        $className = 'App\\' . config('names.class.' . $stem);
+
         $answer = ['error' => 'No permissions to do this'];
         if ($user === null) {
             if ($gateName !== 'create' || $className !== 'App\\User') {
                 return response($answer, 403);
             }
-        } else if ($user->cannot($gateName, $className)) {
-            return response($answer, 403);
+        } else {
+            $id = isset($id) ? $id : $className;
+            
+            if ($user->cannot($gateName, $id)) {
+                return response($answer, 403);
+            }
         }
         return $next($request);
     }

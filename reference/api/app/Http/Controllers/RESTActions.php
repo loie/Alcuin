@@ -26,6 +26,8 @@ trait RESTActions {
 
     public function view ($id)
     {
+        var_dump($id);
+
         $m = self::MODEL;
         $model = $m::find($id);
         if(is_null($model)){
