@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\User;
-use App\Post;
 
 class UserPolicy
 {
@@ -12,15 +11,15 @@ class UserPolicy
         return true;
     }
 
-    public function view (User $user, Answer $answer) {
-        return $user->id === $post->user_id;
+    public function view (User $user, User $viewUser) {
+        return $user->id === $viewUser->id;
     }
 
-    public function update (User $user, Answer $answer) {
-        return $user->id === $post->user_id;
+    public function update (User $user, User $viewUser) {
+        return $user->id === $viewUser->id;
     }
     
-    public function delete (User $user, Answer $answer) {
-        return $user->id === $post->user_id;
+    public function delete (User $user, User $viewUser) {
+        return $user->id === $viewUser->id;
     }
 }
