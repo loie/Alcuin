@@ -11,8 +11,7 @@ class UserPolicy
         return true;
     }
 
-    public function view (User $user, $viewUser) {
-        var_dump($viewUser);
+    public function view (User $user, User $viewUser) {
         return $user->id === $viewUser->id;
     }
 

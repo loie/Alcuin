@@ -24,10 +24,8 @@ trait RESTActions {
         return $this->respond('done', $m::all());
     }
 
-    public function view ($id)
+    public function view (Request $request, $id)
     {
-        var_dump($id);
-
         $m = self::MODEL;
         $model = $m::find($id);
         if(is_null($model)){
@@ -42,11 +40,14 @@ trait RESTActions {
                 if (array_key_exists($name, $m::$RELATIONSHIPS['has_many']) || array_key_exists($name, $m::$RELATIONSHIPS['belongs_to_and_has_many'])) {
                     $relationship_array = [];
                     foreach($relations as $relation) {
-            $item = get_relation_item_array($request, $description, $relation);
+                    }
+                }
+            }
+            $item = $this->get_relation_item_array($request, $description, $relation);
         }
         $value = [];
-        $value['relationships'] => $item['relationship_item'];
-        return $this->respond('done', $model);
+        $value['relationships'] = $item['relationship_item'];
+        return $this->respond('done', $value);
     }
 
     private function get_relation_item_array($request, $description, $relation) {

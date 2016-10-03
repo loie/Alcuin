@@ -47,13 +47,5 @@ class UserController extends Controller
         ];
         return response()->json($value, 201);
     }
-
-    public function view ($id) {
-        $questions = App\Question::all();
-        foreach ($questions as $question) {
-            echo $question->title;
-        }
-    }
-
     //
 }

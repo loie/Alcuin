@@ -77,8 +77,8 @@ class Authorize
             }
         } else {
             $id = isset($id) ? $id : $className;
-            
-            if ($user->cannot($gateName, $id)) {
+            $model = $className::find($id);
+            if ($user->cannot($gateName, $model)) {
                 return response($answer, 403);
             }
         }
