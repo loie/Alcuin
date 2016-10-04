@@ -40,13 +40,33 @@ trait RESTActions {
                 if (array_key_exists($name, $m::$RELATIONSHIPS['has_many']) || array_key_exists($name, $m::$RELATIONSHIPS['belongs_to_and_has_many'])) {
                     $relationship_array = [];
                     foreach($relations as $relation) {
+                        $item = $this->get_relation_item_array($request, $description, $relation);
+                        array_push($relationship_array, $items['relation_item']);
+                        array_push($included, $items['inclusion_item']);
                     }
+                    if (count($relationship_array) > 0) {
+                        $relationships[$name] = $relationship_array;
+                    }
+                } else if (array_key_exists($name, $m::$RELATIONSHIPS['belongs_to'])) {
+                    $relation = $relations;
+                    $item = $this->get_relation_item_array($request, $description, $relation);
+                    $relationships[$name] = $item['relation_item'];
+                    array_push($included, $item['inclusion_item']);
                 }
             }
-            $item = $this->get_relation_item_array($request, $description, $relation);
         }
-        $value = [];
-        $value['relationships'] = $item['relationship_item'];
+        $value = [
+            'data' => [
+                'type' => $m::TYPE,
+                'id' => $model->id,
+                'attributes' => $model,
+                'links' => [
+                    'self' => $request->url() . '/' . $model->id
+                ],
+                'relationships' => $relationships
+            ],
+            'included' => $included
+        ];
         return $this->respond('done', $value);
     }
 
