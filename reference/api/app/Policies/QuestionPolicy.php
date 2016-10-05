@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\User;
+use App\Question;
 use App\Role;
 
 class QuestionPolicy
@@ -18,8 +19,11 @@ class QuestionPolicy
         return $isAllowed;
     }
 
-    public function view (User $user, Question $question) {
+    public function view (User $user, $question) {
         $isAllowed = false;
+        if (is_string($question)) {
+            return true;
+        }
         foreach ($user->roles as $role) {
             if (in_array($role->type, ['user', 'admin'])) {
                 $isAllowed = true;

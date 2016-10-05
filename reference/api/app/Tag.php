@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tag extends Model {
 
-    const TYPE = 'tag';
-
     protected $fillable = ['name'];
     protected $guarded = [];
     protected $visible = ['name'];
@@ -25,7 +23,7 @@ class Tag extends Model {
         'has_many' => [],
         'belongs_to_and_has_many' => [
             'questions' => [
-                'id' => 'question'
+                'type' => 'question'
             ]
         ]
     ];

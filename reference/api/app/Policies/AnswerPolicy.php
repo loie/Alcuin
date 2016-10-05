@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\User;
 use App\Role;
+use App\Answer;
 
 class AnswerPolicy
 {
@@ -26,8 +27,11 @@ class AnswerPolicy
         return $isAllowed;
     }
 
-    public function view (User $user, Answer $answer) {
+    public function view (User $user, $answer) {
         $isAllowed = false;
+        if (is_string($answer)) {
+            return true;
+        }
         foreach ($user->roles as $role) {
             if (in_array($role->type, ['user', 'admin'])) {
                 $isAllowed = true;

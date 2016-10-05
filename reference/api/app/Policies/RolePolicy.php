@@ -3,19 +3,27 @@
 namespace App\Policies;
 
 use App\User;
-use App\Post;
+use App\Role;
 
-class PostPolicy
+class RolePolicy
 {
-    /**
-     * Determine if the given post can be updated by the user.
-     *
-     * @param  \App\User  $user
-     * @param  \App\Post  $post
-     * @return bool
-     */
-    public function update(User $user, Post $post)
-    {
-        return $user->id === $post->user_id;
+
+    public function create (User $user) {
+        return true;
+    }
+
+    public function view (User $user, $role) {
+        if (is_string($role)) {
+            return true;
+        }
+        return $user->id === $role->id;
+    }
+
+    public function update (User $user, Role $role) {
+        return $user->id === $role->id;
+    }
+    
+    public function delete (User $user, Role $role) {
+        return $user->id === $role->id;
     }
 }

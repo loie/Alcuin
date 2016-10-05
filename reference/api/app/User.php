@@ -22,6 +22,28 @@ class User extends Model implements
     protected $fillable = ['email', 'name'];
     protected $visible = ['email', 'name'];
 
+    public static $VALIDATION = [
+        'email' => 'required|unique:users|email',
+        'password_hash' => 'required|max:64|min:64'
+    ];
+
+    public static $RELATIONSHIPS = [
+        'has_many' => [
+            'questions' => [
+                'type' => 'question'
+            ],
+            'answers' => [
+                'type' => 'answer'
+            ]
+        ],
+        'belongs_to' => [],
+        'belongs_to_and_has_many' => [
+            'roles' => [
+                'type' => 'role'
+            ]
+        ]
+    ];
+
     /**
      * The attributes excluded from the model's JSON form.
      *
@@ -37,13 +59,12 @@ class User extends Model implements
         return $this->belongsToMany('App\Role', 'users_roles', 'user_id', 'role_id');
     }
 
+    public function questions () {
+        return $this->hasMany('App\Question');
+    }
 
     public function answers () {
         return $this->hasMany('App\Answer');
-    }
-
-    public function user () {
-        return $this->belongsTo('App\User');
     }
 
     public $timestamps = false;

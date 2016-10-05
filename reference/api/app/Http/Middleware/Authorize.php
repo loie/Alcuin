@@ -51,6 +51,9 @@ class Authorize
             case 'PUT':
                 $gateName = 'update';
                 break;
+            case 'PATCH':
+                $gateName = 'patch';
+                break;
             case 'DELETE':
                 $gateName = 'delete';
                 break;
@@ -64,7 +67,7 @@ class Authorize
             $id = $segments[$length - 1];
             $model = $segments[$length - 2];
         } else {
-            $model = $segmentsp[$length - 1];
+            $model = $segments[$length - 1];
         }
         $pathName = strtolower($model);
         $stem = array_search($pathName, config('names.plural'));
@@ -76,9 +79,16 @@ class Authorize
                 return response($answer, 403);
             }
         } else {
-            $id = isset($id) ? $id : $className;
             $model = $className::find($id);
-            if ($user->cannot($gateName, $model)) {
+            if ($model === null) {
+                if (isset($id)) {
+                    return response([
+                        'error' => 'Not found'
+                    ], 404);
+                } else if ($user->cannot($gateName, $className)) {
+                    return response($answer, 403);
+                }
+            } else if ($user->cannot($gateName, $model)) {
                 return response($answer, 403);
             }
         }

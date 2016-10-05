@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Answer extends Model {
 
-    const TYPE = 'question';
-
     protected $fillable = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvoted', 'dummy'];
     protected $guarded = [];
     protected $visible = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvoted', 'dummy'];
@@ -23,10 +21,10 @@ class Answer extends Model {
     public static $RELATIONSHIPS = [
         'belongs_to' => [
             'user' => [
-                'id' => 'user'
+                'type' => 'user'
             ],
             'question' => [
-                'id' => 'question'
+                'type' => 'question'
             ]
         ],
         'has_many' => [],

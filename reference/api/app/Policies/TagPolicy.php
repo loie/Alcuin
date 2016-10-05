@@ -19,8 +19,11 @@ class TagPolicy
         return $isAllowed;
     }
 
-    public function view (User $user, Tag $tag) {
+    public function view (User $user, $tag) {
         $isAllowed = false;
+        if (is_string($tag)) {
+            return true;
+        }
         foreach ($user->roles as $role) {
             if (in_array($role->type, ['user', 'admin'])) {
                 $isAllowed = true;

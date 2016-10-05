@@ -8,22 +8,15 @@ use App\User;
 class UserController extends Controller
 {
     use RESTActions;
-
-    const MODEL = 'App\Question';
-    const TYPE = 'question';
-
-    private static $VALIDATION = [
-        'email' => 'required|unique:users|email',
-        'password_hash' => 'required|max:64|min:64'
-    ];
-
+    const MODEL = 'App\User';
+    const TYPE = 'user';
 
     public function create (Request $request) {
         $email = $request->has('email') ? $request->input('email') : null;
         $password_hash = $request->has('password_hash') ? $request->input('password_hash') : null;
         $name = $request->has('name') ? $request->input('name') : null;
-
-        $this->validate($request, self::$VALIDATION);
+        $m = self::MODEL;
+        $this->validate($request, $m::$VALIDATION);
 
         $user = new User;
         $user->email = $email;
