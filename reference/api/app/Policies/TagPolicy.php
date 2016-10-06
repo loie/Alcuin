@@ -4,9 +4,13 @@ namespace App\Policies;
 
 use App\User;
 use App\Role;
+use App\Tag;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TagPolicy
 {
+    use HandlesAuthorization;
+
     public function create(User $user)
     {
         $isAllowed = false;
@@ -34,6 +38,7 @@ class TagPolicy
     }
 
     public function update (User $user, Tag $tag) {
+        return true;
         $isAllowed = false;
         foreach ($user->roles as $role) {
             if (in_array($role->type, ['user', 'admin'])) {

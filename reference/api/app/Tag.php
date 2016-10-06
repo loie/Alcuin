@@ -1,6 +1,7 @@
 <?php namespace App;
 
 // other models
+use Illuminate\Http\Request;
 use App\User;
 use App\Question;
 use App\Answer;
@@ -14,9 +15,12 @@ class Tag extends Model {
     protected $visible = ['name'];
     protected $dates = [];
 
-    public static $VALIDATION = [
-        'name' => 'required|min:1|max:255'
-    ];
+    public static function VALIDATION (Request $request) {
+        $validation = [
+            'name' => 'required|min:1|max:255'
+        ];
+        return $validation;
+    }
 
     public static $RELATIONSHIPS = [
         'belongs_to' => [],

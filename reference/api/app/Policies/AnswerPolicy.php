@@ -5,9 +5,11 @@ namespace App\Policies;
 use App\User;
 use App\Role;
 use App\Answer;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class AnswerPolicy
 {
+    use HandlesAuthorization;
     /**
      * Determine if the given post can be updated by the user.
      *

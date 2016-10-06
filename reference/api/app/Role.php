@@ -1,6 +1,7 @@
 <?php namespace App;
 
 // other models
+use Illuminate\Http\Request;
 use App\User;
 use App\Answer;
 
@@ -13,9 +14,12 @@ class Role extends Model {
     protected $visible = ['name'];
     protected $dates = [];
 
-    public static $VALIDATION = [
-        'type' => 'required|min:3|max:255',
-    ];
+    public static function VALIDATION (Request $request) {
+        $validation = [
+            'name' => 'required|min:1|max:255'
+        ];
+        return $validation;
+    }
 
     public static $RELATIONSHIPS = [
         'belongs_to_and_has_many' => ['users']

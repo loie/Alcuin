@@ -1,6 +1,7 @@
 <?php namespace App;
 
 // other models
+use Illuminate\Http\Request;
 use App\User;
 use App\Answer;
 
@@ -14,9 +15,15 @@ class Question extends Model {
     protected $dates = [];
 
     public static $VALIDATION = [
-        'title' => 'required|min:3|max:255',
-        'text' => 'required|min:10'
     ];
+
+    public static function VALIDATION (Request $request) {
+        $validation = [
+            'title' => 'required|min:3|max:255',
+            'text' => 'required|min:10'
+        ];
+        return $validation;
+    }
 
     public static $RELATIONSHIPS = [
         'belongs_to' => [
@@ -40,6 +47,10 @@ class Question extends Model {
 
     public function answers () {
         return $this->hasMany('App\Answer');
+    }
+
+    public function tags () {
+        return $this->belongsToMany('App\Tag', 'questions_tags', 'question_id', 'tag_id');
     }
 
     public function user () {

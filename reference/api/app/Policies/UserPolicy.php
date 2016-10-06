@@ -1,11 +1,13 @@
 <?php
-
 namespace App\Policies;
+
 use App\User;
 use App\Role;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class UserPolicy
 {
+    use HandlesAuthorization;
 
     public function create (User $user) {
         return true;
@@ -19,7 +21,6 @@ class UserPolicy
     }
 
     public function update (User $user, User $viewUser) {
-        echo 'destroy';
         return $user->id === $viewUser->id;
     }
     
@@ -28,7 +29,6 @@ class UserPolicy
     }
 
     public function patch (User $user, User $viewUser) {
-        echo 'asdf';
         return true;
     }
 }

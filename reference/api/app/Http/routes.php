@@ -23,9 +23,8 @@ foreach (config('names.path') as $id => $path) {
     $app->post($path, getRouteConfig('create', $className, $middleware));
     $app->get($path, getRouteConfig('all', $className, $middleware));
     $app->get($path . '/' . ID, getRouteConfig('view', $className, $middleware));
-
     $app->put($path . '/' . ID, getRouteConfig('update', $className, $middleware));
-    $app->patch($path . '/' . ID, getRouteConfig('update', $className, $middleware));
+    $app->patch($path . '/' . ID, getRouteConfig('patch', $className, $middleware));
 
             // $app->delete(ID, getRouteConfig('delete', $controllerName, $middleware));
 

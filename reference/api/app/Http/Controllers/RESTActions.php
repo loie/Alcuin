@@ -16,6 +16,7 @@ trait RESTActions {
         'not_allowed' => 401,
         'not_found' => 404,
         'conflict' => 409,
+        'unprocessable' => 422,
     ];
 
     private function get_view (Request $request, $m, $model) {
@@ -58,7 +59,7 @@ trait RESTActions {
         return $value;
     }
 
-    private function get_relation_item_array ($request, $description, $relation) {
+    private function get_relation_item_array (Request $request, $description, $relation) {
         $relation_item = [];
 
         $link = $request->root() . config('names.path.' . $description['type']). '/' . $relation->id;
@@ -82,7 +83,83 @@ trait RESTActions {
         ];
     }
 
-    public function all(Request $request)
+    private function save_model (Request $request, $m, $model) {
+        $model->fill($request->input());
+        if (array_key_exists('user', $m::$RELATIONSHIPS['belongs_to'])) {
+            $model->user()->associate($request->user());
+        }
+        $save_relations = function ($relation, $key) use ($model, $request) {
+            if ($request->has($relation)) {
+                $id = $request->input($relation);
+                if (is_numeric($id)) { // belongs to relationship
+                    // $assoc = $className::find($id);
+                    $model->{$relation}()->associate($id);
+                } else if (is_array($id)) {
+                    $key = array_search($relation, config('names.plural'));
+                    $className = 'App\\' . config('names.class.' . $key);
+                    $links = $className::find($id);
+                    $new_ids = [];
+                    foreach($links as $link) {
+                        array_push($new_ids, $link->id);
+                    }
+                    
+                    $relations = $model->{$relation};
+                    $old_ids = [];
+                    foreach($relations as $rel) {
+                        array_push($old_ids, $rel->id);
+                    }
+                    $in_old_but_not_in_new = array_diff($old_ids, $new_ids);
+                    $className::destroy($in_old_but_not_in_new);
+                    $model->{$relation}()->saveMany($links);
+                }
+            }
+        };
+        $relationships_belongs_to = array_keys($m::$RELATIONSHIPS['belongs_to']);
+        array_walk($relationships_belongs_to, $save_relations);
+        if ($model->id === null) {
+            try {
+                $model->save();
+            } catch (Exception $e) {
+                $value = [
+                    'error' => 'Bad Request',
+                    'details' => 'Could not do this because the given model was invalid.'
+                ];
+                $this->respond('not_valid', $value);
+            }
+        }
+        $relationships_has_many = array_keys($m::$RELATIONSHIPS['has_many']);
+        array_walk($relationships_has_many, $save_relations);
+        $relationships_belongs_to_and_has_many = array_keys($m::$RELATIONSHIPS['belongs_to_and_has_many']);
+        array_walk(
+            $relationships_belongs_to_and_has_many,
+            function ($relation, $relation_name) use ($model, $request) {
+                $relation_array = ($request->input($relation) === null) ? [] : $request->input($relation);
+                if ($model->{$relation}()) {
+                    try {
+                        $model->{$relation}()->sync($relation_array);
+                    } catch (Exception $e) {
+                        $value = ['error' => 'heise'];
+                        return $this->respond('not_valid', $value);
+                    }
+                }
+            }
+        );
+        $model->save();
+    }
+
+    private function get_validation_exception_values (ValidationException $e) {
+        $details = [];
+        foreach ($e->getResponse()->getData() as $key => $message) {
+            array_push($details, $message);
+        }
+        $value = [
+            'error' => 'The data was not correct',
+            'details' => $details
+        ];
+        return $value;
+    }
+
+    public function all (Request $request)
     {
         $m = self::MODEL;
         $models = $m::all();
@@ -114,41 +191,15 @@ trait RESTActions {
 
     public function create (Request $request) {
         $m = self::MODEL;
-        $this->validate($request, $m::$VALIDATION);
+        try {
+            $this->validate($request, $m::VALIDATION($request));
+        } catch (ValidationException $e) {
+            $value = $this->get_validation_exception_values($e);
+            return $this->respond('unprocessable', $value);
+        }
 
         $model = new $m;
-        $model->fill($request->input());
-        if (array_key_exists('user', $m::$RELATIONSHIPS['belongs_to'])) {
-            $model->user()->associate($request->user());
-        }
-        $relations = array_keys($m::$RELATIONSHIPS['belongs_to']);
-        $save_relations = function ($relation, $key) use ($model, $request) {
-            if ($request->has($relation)) {
-                $id = $request->input($relation);
-                $className = 'App\\' . config('names.class.' . $relation);
-                if (is_numeric($id)) { // belongs to relationship
-                    // $assoc = $className::find($id);
-                    $model->{$relation}()->associate($id);
-                } else if (is_array($id)) {
-                    $model->{$relation}()->attach($id);
-                }
-            }
-        };
-        array_walk($relations, $save_relations);
-        try {
-            $model->save();
-        } catch (Exception $e) {
-            $value = [
-                'error' => 'Bad Request',
-                'details' => 'Could not do this because the given model was invalid.'
-            ];
-            $this->respond('not_valid', $value);
-        }
-
-        // handle m:n relation
-        $relations = array_keys($m::$RELATIONSHIPS['belongs_to_and_has_many']);
-        array_walk($relations, $save_relations);
-        $model->save();
+        $this->save_model($request, $m, $model);
 
         // handle output
         $model->makeHidden('user_id')->toArray();
@@ -160,64 +211,27 @@ trait RESTActions {
         echo 'LOL you rock';
     }
 
-    public function update (Request $request, $id)
-    {
+    public function update (Request $request, $id) {
         $m = self::MODEL;
-        $this->validate($request, $m::$VALIDATION);
+        try {
+            $this->validate($request, $m::VALIDATION($request, $id));
+        } catch (ValidationException $e) {
+            $value = $this->get_validation_exception_values($e);
+            return $this->respond('created', $value);
+        }
         $model = $m::find($id);
-        if(is_null($model)){
+        if (is_null($model)){
             return $this->respond('not_found');
         }
-        // if (Gate::allowes())
-        $model->update($request->all());
-        return $this->respond('done', $model);
-
-
-        $m = self::MODEL;
-        $this->validate($request, $m::$VALIDATION);
-
-        $model = new $m;
-        $model->fill($request->input());
-        if (array_key_exists('user', $m::$RELATIONSHIPS['belongs_to'])) {
-            $model->user()->associate($request->user());
-        }
-        $relations = array_keys($m::$RELATIONSHIPS['belongs_to']);
-        $save_relations = function ($relation, $key) use ($model, $request) {
-            if ($request->has($relation)) {
-                $id = $request->input($relation);
-                $className = 'App\\' . config('names.class.' . $relation);
-                if (is_numeric($id)) { // belongs to relationship
-                    // $assoc = $className::find($id);
-                    $model->{$relation}()->associate($id);
-                } else if (is_array($id)) {
-                    $model->{$relation}()->attach($id);
-                }
-            }
-        };
-        array_walk($relations, $save_relations);
-        try {
-            $model->save();
-        } catch (Exception $e) {
-            $value = [
-                'error' => 'Bad Request',
-                'details' => 'Could not do this because the given model was invalid.'
-            ];
-            $this->respond('not_valid', $value);
-        }
-
-        // handle m:n relation
-        $relations = array_keys($m::$RELATIONSHIPS['belongs_to_and_has_many']);
-        array_walk($relations, $save_relations);
-        $model->save();
+        $this->save_model($request, $m, $model);
 
         // handle output
         $model->makeHidden('user_id')->toArray();
         $value = $this->get_view($request, $m, $model);
-        return $this->respond('created', $value);
+        return $this->respond('done', $value);
     }
 
-    public function delete ($id)
-    {
+    public function delete ($id) {
         $m = self::MODEL;
         if(is_null($m::find($id))){
             return $this->respond('not_found');
