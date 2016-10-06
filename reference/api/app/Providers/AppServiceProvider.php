@@ -23,11 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Answer::observe(ModelObserver::class);
-        Question::observe(ModelObserver::class);
-        Role::observe(ModelObserver::class);
-        Tag::observe(ModelObserver::class);
-        User::observe(ModelObserver::class);
+        Answer::observe(AnswerObserver::class);
+        Question::observe(QuestionObserver::class);
+        Role::observe(RoleObserver::class);
+        Tag::observe(TagObserver::class);
+        User::observe(UserObserver::class);
     }
 
     /**
