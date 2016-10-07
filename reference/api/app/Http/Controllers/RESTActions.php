@@ -95,13 +95,13 @@ trait RESTActions {
                     // $assoc = $className::find($id);
                     $model->{$relation}()->associate($id);
                 } else if (is_array($id)) {
+                    // delete all items that were in relationship before, but not after the update
+                    // get class name
                     $key = array_search($relation, config('names.plural'));
                     $className = 'App\\' . config('names.class.' . $key);
+                    // get instances of the references items
                     $links = $className::find($id);
-                    $new_ids = [];
-                    foreach($links as $link) {
-                        array_push($new_ids, $link->id);
-                    }
+                    $new_ids = $id;
                     
                     $relations = $model->{$relation};
                     $old_ids = [];
@@ -110,6 +110,7 @@ trait RESTActions {
                     }
                     $in_old_but_not_in_new = array_diff($old_ids, $new_ids);
                     $className::destroy($in_old_but_not_in_new);
+
                     $model->{$relation}()->saveMany($links);
                 }
             }
@@ -159,8 +160,7 @@ trait RESTActions {
         return $value;
     }
 
-    public function all (Request $request)
-    {
+    public function all (Request $request) {
         $m = self::MODEL;
         $models = $m::all();
         $user = $request->user();
@@ -200,6 +200,7 @@ trait RESTActions {
 
         $model = new $m;
         $this->save_model($request, $m, $model);
+        echo (count($model->$questions));
 
         // handle output
         $model->makeHidden('user_id')->toArray();
