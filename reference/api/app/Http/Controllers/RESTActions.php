@@ -19,10 +19,14 @@ trait RESTActions {
         'unprocessable' => 422,
     ];
 
-    private function get_view (Request $request, $m, $model) {
+    private function get_view (Request $request, $model) {
+        $m = get_class($model);
         $relationships = [];
         $included = [];
         $all_relations = array_merge($m::$RELATIONSHIPS['belongs_to'], $m::$RELATIONSHIPS['has_many'], $m::$RELATIONSHIPS['belongs_to_and_has_many']);
+        // refresh relationships from db
+        $keys = array_keys($all_relations);
+        $model->load($keys);
         foreach ($all_relations as $name => $description) {
             $relations = $model->{$name}; // e.g. comments
             if ($relations !== null) {
@@ -44,13 +48,21 @@ trait RESTActions {
                 }
             }
         }
+
+        $link = null;
+        $link_segments = $request->segments();
+        if ((count($link_segments) > 0) && is_numeric($link_segments[count($link_segments) - 1])) {
+            $link = $request->url();
+        } else {
+            $link = $request->url() . '/' . $model->id;
+        }
         $value = [
             'data' => [
                 'type' => self::TYPE,
                 'id' => $model->id,
                 'attributes' => $model,
                 'links' => [
-                    'self' => $request->url() . '/' . $model->id
+                    'self' => $link
                 ],
                 'relationships' => $relationships
             ],
@@ -83,7 +95,15 @@ trait RESTActions {
         ];
     }
 
-    private function save_model (Request $request, $m, $model) {
+    private function save_model (Request $request, $model, $fullOverwrite = false) {
+        $m = get_class($model);
+        if ($fullOverwrite) {
+            $attributes = $model->getAttributes();
+            foreach ($attributes as $key => $value) {
+                $attributes[$key] = null;
+            }
+            $model->fill($attributes);
+        }
         $model->fill($request->input());
         if (array_key_exists('user', $m::$RELATIONSHIPS['belongs_to'])) {
             $model->user()->associate($request->user());
@@ -172,7 +192,7 @@ trait RESTActions {
         }
         $values = [];
         foreach ($items as $item) {
-            $value = $this->get_view($request, $m, $item);
+            $value = $this->get_view($request, $item);
             array_push($values, $value);
         }
         return $this->respond('done', $values);
@@ -185,7 +205,7 @@ trait RESTActions {
             $value = ['error' => 'Model not found'];
             return $this->respond('not_found', $value);
         }
-        $value = $this->get_view($request, $m, $model);
+        $value = $this->get_view($request, $model);
         return $this->respond('done', $value);
     }
 
@@ -199,17 +219,32 @@ trait RESTActions {
         }
 
         $model = new $m;
-        $this->save_model($request, $m, $model);
-        echo (count($model->$questions));
+        $this->save_model($request, $model);
 
         // handle output
         $model->makeHidden('user_id')->toArray();
-        $value = $this->get_view($request, $m, $model);
+        $value = $this->get_view($request, $model);
         return $this->respond('created', $value);
     }
 
     public function patch (Request $request, $id) {
-        echo 'LOL you rock';
+        m = self::MODEL;
+        try {
+            $this->validate($request, $m::VALIDATION($request, $id));
+        } catch (ValidationException $e) {
+            $value = $this->get_validation_exception_values($e);
+            return $this->respond('created', $value);
+        }
+        $model = $m::find($id);
+        if (is_null($model)){
+            return $this->respond('not_found');
+        }
+        $this->save_model($request, $model, false);
+
+        // handle output
+        $model->makeHidden('user_id')->toArray();
+        $value = $this->get_view($request, $model);
+        return $this->respond('done', $value);
     }
 
     public function update (Request $request, $id) {
@@ -224,11 +259,11 @@ trait RESTActions {
         if (is_null($model)){
             return $this->respond('not_found');
         }
-        $this->save_model($request, $m, $model);
+        $this->save_model($request, $model, true);
 
         // handle output
         $model->makeHidden('user_id')->toArray();
-        $value = $this->get_view($request, $m, $model);
+        $value = $this->get_view($request, $model);
         return $this->respond('done', $value);
     }
 
