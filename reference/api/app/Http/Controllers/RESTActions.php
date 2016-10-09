@@ -108,17 +108,16 @@ trait RESTActions {
         if (array_key_exists('user', $m::$RELATIONSHIPS['belongs_to'])) {
             $model->user()->associate($request->user());
         }
-        $save_relations = function ($relation, $key) use ($model, $request) {
+        $save_relations = function ($relation, $key) use ($model, $request, $fullOverwrite) {
             if ($request->has($relation)) {
+                $className = 'App\\' . config('names.class.' . $key);
                 $id = $request->input($relation);
                 if (is_numeric($id)) { // belongs to relationship
-                    // $assoc = $className::find($id);
                     $model->{$relation}()->associate($id);
                 } else if (is_array($id)) {
                     // delete all items that were in relationship before, but not after the update
                     // get class name
                     $key = array_search($relation, config('names.plural'));
-                    $className = 'App\\' . config('names.class.' . $key);
                     // get instances of the references items
                     $links = $className::find($id);
                     $new_ids = $id;
@@ -132,6 +131,23 @@ trait RESTActions {
                     $className::destroy($in_old_but_not_in_new);
 
                     $model->{$relation}()->saveMany($links);
+                }
+            } else {
+                // request has no definition of this relation
+                if ($fullOverwrite) {
+                    $class = get_class($model->{$relation}());
+                    if ('Illuminate\Database\Eloquent\Relations\BelongsTo' === $class) {
+                        $value = ['error' => 'belongs to relation is missing'];
+                        $this->respond('unprocessable', $value);
+                    } else if ('Illuminate\Database\Eloquent\Relations\HasMany' === $class) {
+                        $instances = $model->{$relation};
+                        $ids = [];
+                        $instances->each(function ($item) use ($ids) {
+                            array_push($ids, $item->id);
+                        });
+                        
+                        $className::destroy($ids);
+                    }
                 }
             }
         };
@@ -228,7 +244,7 @@ trait RESTActions {
     }
 
     public function patch (Request $request, $id) {
-        m = self::MODEL;
+        $m = self::MODEL;
         try {
             $this->validate($request, $m::VALIDATION($request, $id));
         } catch (ValidationException $e) {
