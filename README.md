@@ -5,11 +5,7 @@ Alcuin creates the database schema and the corresponding PHP classes to provide 
 All it needs, is a YAML configuration file and a working PHP environment with composer and a MySQL database.
 
 ###What can Alcuin do fo you?
-You want a REST API? You don't like thinking about foreign key constraints in your DB? You don't like facing the problem, that you want an easy way to create a REST service, with user authentification but the initial inertia is too big, so that you use full-stack web application frameworks like Codeigniter, but all you need is just a REST API?
-
-This is the point where Alcuin steps in and saves the day.
-
-Alcuin creates a REST service for you, without having to fiddle around with command lines statements.
+You want a REST API? You don't like thinking about foreign key constraints in your DB? You want an easy way to create a full-grown REST APi, but not worrying about the hassle? Try Alcuin!
 
 ###How to Start
 
