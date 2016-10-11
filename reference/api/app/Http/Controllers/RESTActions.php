@@ -108,9 +108,15 @@ trait RESTActions {
         if (array_key_exists('user', $m::$RELATIONSHIPS['belongs_to'])) {
             $model->user()->associate($request->user());
         }
-        $save_relations = function ($relation, $key) use ($model, $request, $fullOverwrite) {
+        $save_relations = function ($relation) use ($model, $request, $fullOverwrite) {
+            $id = array_search($relation, config('names.plural'));
+            $className = null;
+            if ($id === null) {
+                $className = 'App\\' . config('names.class.' . $relation);
+            } else {
+                $className = 'App\\' . config('names.class.' . $id);
+            }
             if ($request->has($relation)) {
-                $className = 'App\\' . config('names.class.' . $key);
                 $id = $request->input($relation);
                 if (is_numeric($id)) { // belongs to relationship
                     $model->{$relation}()->associate($id);
@@ -132,20 +138,21 @@ trait RESTActions {
 
                     $model->{$relation}()->saveMany($links);
                 }
-            } else {
+            }
+            else {
                 // request has no definition of this relation
                 if ($fullOverwrite) {
-                    $class = get_class($model->{$relation}());
-                    if ('Illuminate\Database\Eloquent\Relations\BelongsTo' === $class) {
+                    $relationType = get_class($model->{$relation}());
+                    if ('Illuminate\Database\Eloquent\Relations\BelongsTo' === $relationType) {
                         $value = ['error' => 'belongs to relation is missing'];
                         $this->respond('unprocessable', $value);
-                    } else if ('Illuminate\Database\Eloquent\Relations\HasMany' === $class) {
+                    } else if ('Illuminate\Database\Eloquent\Relations\HasMany' === $relationType) {
                         $instances = $model->{$relation};
                         $ids = [];
-                        $instances->each(function ($item) use ($ids) {
+                        foreach ($instances as $item) {
                             array_push($ids, $item->id);
-                        });
-                        
+                        }
+                        var_dump($ids);
                         $className::destroy($ids);
                     }
                 }
