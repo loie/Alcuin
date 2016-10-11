@@ -175,9 +175,17 @@ trait RESTActions {
         $relationships_belongs_to_and_has_many = array_keys($m::$RELATIONSHIPS['belongs_to_and_has_many']);
         array_walk(
             $relationships_belongs_to_and_has_many,
-            function ($relation, $relation_name) use ($model, $request) {
-                $relation_array = ($request->input($relation) === null) ? [] : $request->input($relation);
-                if ($model->{$relation}()) {
+            function ($relation) use ($model, $request, $fullOverwrite) {
+                $relation_array = null;
+                if ($request->input($relation) === null) {
+                    if ($fullOverwrite) {
+                        $relation_array = [];
+                    }
+                }
+                else {
+                    $relation_array = $request->input($relation);
+                }
+                if ($model->{$relation}() && $relation_array !== null) {
                     try {
                         $model->{$relation}()->sync($relation_array);
                     } catch (Exception $e) {
