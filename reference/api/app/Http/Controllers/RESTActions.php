@@ -152,7 +152,6 @@ trait RESTActions {
                         foreach ($instances as $item) {
                             array_push($ids, $item->id);
                         }
-                        var_dump($ids);
                         $className::destroy($ids);
                     }
                 }
