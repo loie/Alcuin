@@ -95,6 +95,13 @@ trait RESTActions {
         ];
     }
 
+    abstract protected function get_visible_properties (Request $request, User $user);
+    abstract protected function get_editable_properties (Request $request, User $user);
+    abstract protected function get_visible_relationships (Request $request, User $user);
+    abstract protected function get_creatable_relationships (Request $request, User $user);
+    abstract protected function get_deletable_relationships (Request $request, User $user);
+
+
     private function save_model (Request $request, $model, $fullOverwrite = false) {
         $m = get_class($model);
         if ($fullOverwrite) {
