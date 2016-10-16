@@ -20,8 +20,8 @@ class User extends Model implements
      *
      * @var array
      */
-    protected $fillable = ['email', 'name'];
-    protected $visible = ['email', 'name'];
+    // protected $fillable = ['email', 'name'];
+
 
     public static function VALIDATION (Request $request, $id = null) {
         $validation = [
@@ -35,6 +35,23 @@ class User extends Model implements
         }
         return $validation;
     }
+
+    public static $PROPERTIES = [
+        'email',
+        'name',
+        'password',
+        'token',
+        'expires'
+    ];
+
+    public static $PROPERTIES_PERMISSIONS = [
+        'email' => ['self'],
+        'name' => ['all'],
+        'password' => ['none'],
+        'token' => ['admin'],
+        'expires' => ['self', 'admin']
+
+    ];
 
     public static $RELATIONSHIPS = [
         'has_many' => [
@@ -51,17 +68,6 @@ class User extends Model implements
                 'type' => 'role'
             ]
         ]
-    ];
-
-    /**
-     * The attributes excluded from the model's JSON form.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password',
-        'token',
-        'timestamp'
     ];
 
     public function roles () {

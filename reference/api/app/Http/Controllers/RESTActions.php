@@ -19,6 +19,79 @@ trait RESTActions {
         'unprocessable' => 422,
     ];
 
+    
+
+    protected function get_visible_properties (Request $request, $model) {
+        $user = $request->user();
+        $m = get_class($model);
+        $properties = $m::$PROPERTIES;
+        $visible_properties = [];
+        foreach ($properties as $property) {
+            $permissions = $m::$PROPERTIES_PERMISSIONS;
+            $is_valid = false;
+            if (in_array(self::ALL, $permissions[$property])) {
+
+                $is_valid = true;
+            } else if (in_array(self::NONE, $permissions[$property])) {
+                $is_valid = false;
+            } else if (in_array(self::MY, $permissions[$property])) {
+                if ($m === 'App\\User') {
+                    $is_valid = ($model->id === $user->id);
+                } else {
+                    // try to get the single user which this instance belongs to
+                    $assigned_user = $model->user;
+                    if (is_null($assigned_user)) {
+                        if ($model->users !== null) {
+                            foreach ($model->users as $mult_user) {
+                                if ($mult_user->id === $user->id) {
+                                    $is_valid = true;
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        if ($assigned_user->id === $user->id) {
+                            $is_valid = true;
+                        }
+                    }
+                }
+            }
+            if (!$is_valid) {
+                $role_names = [];
+                foreach ($user->roles as $role) {
+                    array_push($role_names, $role->name);
+                }
+                $intersect = array_intersect($permissions[$property], $role_names);
+                if (count($intersect) > 0) {
+                    $is_valid = true;
+                }
+            }
+            // var_dump($is_valid, $property);
+            if ($is_valid) {
+                array_push($visible_properties, $property);
+            }
+        }
+        return $visible_properties;
+    }
+
+    protected function get_hidden_properties (Request $request, $model) {
+        $m = get_class($model);
+        return array_diff($m::$PROPERTIES, $this->get_visible_properties($request, $model));
+    }
+
+    protected function get_editable_properties (Request $request, $model) {
+
+    }
+    protected function get_visible_relationships (Request $request, $model) {
+
+    }
+    protected function get_creatable_relationships (Request $request, $model) {
+
+    }
+    protected function get_deletable_relationships (Request $request, $model) {
+
+    }
+
     private function get_view (Request $request, $model) {
         $m = get_class($model);
         $relationships = [];
@@ -56,6 +129,8 @@ trait RESTActions {
         } else {
             $link = $request->url() . '/' . $model->id;
         }
+        $model->setHidden($this->get_hidden_properties($request, $model));
+        $model->setVisible($this->get_visible_properties($request, $model));
         $value = [
             'data' => [
                 'type' => self::TYPE,
@@ -94,13 +169,6 @@ trait RESTActions {
             'inclusion_item' => $inclusion_item
         ];
     }
-
-    abstract protected function get_visible_properties (Request $request, User $user);
-    abstract protected function get_editable_properties (Request $request, User $user);
-    abstract protected function get_visible_relationships (Request $request, User $user);
-    abstract protected function get_creatable_relationships (Request $request, User $user);
-    abstract protected function get_deletable_relationships (Request $request, User $user);
-
 
     private function save_model (Request $request, $model, $fullOverwrite = false) {
         $m = get_class($model);

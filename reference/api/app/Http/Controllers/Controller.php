@@ -10,6 +10,11 @@ class Controller extends BaseController
     protected static $SALT = [1, 2, 4, 5, 6, 9, 10, 13, 15, 18, 22];
     const PEPPER = '___[]+++';
 
+    const ALL = 'all';
+    const MY = 'self';
+    const NONE = 'none';
+
+
     protected static function spice ($string) {
         $i = 0;
         $stringLength = strlen($string);

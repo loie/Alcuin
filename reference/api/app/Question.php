@@ -25,6 +25,16 @@ class Question extends Model {
         return $validation;
     }
 
+    public static $PROPERTIES = [
+        'title',
+        'text',
+    ];
+
+    public static $PROPERTIES_PERMISSIONS = [
+        'title' => ['all'],
+        'text' => ['all'],
+    ];
+
     public static $RELATIONSHIPS = [
         'belongs_to' => [
             'user' => [
