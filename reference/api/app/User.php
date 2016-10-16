@@ -26,7 +26,7 @@ class User extends Model implements
     public static function VALIDATION (Request $request, $id = null) {
         $validation = [
             'email' => 'required|email|unique:users,email',
-            'password_hash' => 'required|max:64|min:64'
+            'password' => 'required|max:64|min:64'
         ];
         if (!is_null($id)) {
             $class = self::class;

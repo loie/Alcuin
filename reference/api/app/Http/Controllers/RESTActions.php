@@ -59,7 +59,7 @@ trait RESTActions {
             if (!$is_valid) {
                 $role_names = [];
                 foreach ($user->roles as $role) {
-                    array_push($role_names, $role->name);
+                    array_push($role_names, $role->type);
                 }
                 $intersect = array_intersect($permissions[$property], $role_names);
                 if (count($intersect) > 0) {
@@ -74,9 +74,14 @@ trait RESTActions {
         return $visible_properties;
     }
 
-    protected function get_hidden_properties (Request $request, $model) {
-        $m = get_class($model);
-        return array_diff($m::$PROPERTIES, $this->get_visible_properties($request, $model));
+    protected function set_visible_properties (Request $request, $model) {
+        $visible_properties = $this->get_visible_properties($request, $model, $);
+        if (count($visible_properties) > 0) {
+            $model->setVisible($visible_properties);
+        } else {
+            $m = get_class($model);
+            $model->makeHidden($m::$PROPERTIES);
+        }
     }
 
     protected function get_editable_properties (Request $request, $model) {
@@ -129,8 +134,7 @@ trait RESTActions {
         } else {
             $link = $request->url() . '/' . $model->id;
         }
-        $model->setHidden($this->get_hidden_properties($request, $model));
-        $model->setVisible($this->get_visible_properties($request, $model));
+        $this->set_visible_properties($request, $model);
         $value = [
             'data' => [
                 'type' => self::TYPE,
@@ -153,6 +157,7 @@ trait RESTActions {
         $relation_item['links'] = [
             'self' => $link
         ];
+        $this->set_visible_properties($request, $relation);
         $relation_item['attributes'] = [
             'id' => $relation->id,
             'type' => $description['type'],

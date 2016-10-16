@@ -10,9 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tag extends Model {
 
-    protected $fillable = ['name'];
     protected $guarded = [];
-    protected $visible = ['name'];
+    protected $hidden = ['questions', 'answers', 'pivot'];
     protected $dates = [];
 
     public static function VALIDATION (Request $request) {
@@ -21,6 +20,14 @@ class Tag extends Model {
         ];
         return $validation;
     }
+
+    public static $PROPERTIES = [
+        'name',
+    ];
+
+    public static $PROPERTIES_PERMISSIONS = [
+        'name' => ['none']
+    ];
 
     public static $RELATIONSHIPS = [
         'belongs_to' => [],

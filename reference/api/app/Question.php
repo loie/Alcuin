@@ -11,7 +11,7 @@ class Question extends Model {
 
     protected $fillable = ['title', 'text'];
     protected $guarded = [];
-    protected $visible = ['title', 'text'];
+    protected $hidden = ['answers', 'tags', 'user', 'pivot'];
     protected $dates = [];
 
     public static $VALIDATION = [
@@ -32,7 +32,7 @@ class Question extends Model {
 
     public static $PROPERTIES_PERMISSIONS = [
         'title' => ['all'],
-        'text' => ['all'],
+        'text' => ['admin'],
     ];
 
     public static $RELATIONSHIPS = [
