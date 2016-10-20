@@ -11,7 +11,7 @@ class Role extends Model {
 
     protected $fillable = ['name'];
     protected $guarded = [];
-    protected $visible = ['name'];
+    protected $hidden = ['users', 'pivot'];
     protected $dates = [];
 
     public static function VALIDATION (Request $request) {
@@ -20,6 +20,15 @@ class Role extends Model {
         ];
         return $validation;
     }
+
+    public static $PROPERTIES = [
+        'type',
+    ];
+
+    public static $PROPERTIES_PERMISSIONS = [
+        'type' => ['admin'],
+    ];
+
 
     public static $RELATIONSHIPS = [
         'belongs_to_and_has_many' => ['users']

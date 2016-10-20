@@ -75,7 +75,7 @@ trait RESTActions {
     }
 
     protected function set_visible_properties (Request $request, $model) {
-        $visible_properties = $this->get_visible_properties($request, $model, $);
+        $visible_properties = $this->get_visible_properties($request, $model);
         if (count($visible_properties) > 0) {
             $model->setVisible($visible_properties);
         } else {
