@@ -21,11 +21,11 @@ trait RESTActions {
 
     
 
-    protected function get_visible_properties (Request $request, $model) {
+    protected function get_actionable_properties (Request $request, $model, $operation) {
         $user = $request->user();
         $m = get_class($model);
         $properties = $m::$PROPERTIES;
-        $visible_properties = [];
+        $actionable_properties = [];
         foreach ($properties as $property) {
             $permissions = $m::$PROPERTIES_PERMISSIONS;
             $is_valid = false;
@@ -68,14 +68,14 @@ trait RESTActions {
             }
             // var_dump($is_valid, $property);
             if ($is_valid) {
-                array_push($visible_properties, $property);
+                array_push($actionable_properties, $property);
             }
         }
-        return $visible_properties;
+        return $actionable_properties;
     }
 
     protected function set_visible_properties (Request $request, $model) {
-        $visible_properties = $this->get_visible_properties($request, $model);
+        $visible_properties = $this->get_actionable_properties($request, $model, 'read');
         if (count($visible_properties) > 0) {
             $model->setVisible($visible_properties);
         } else {
@@ -84,8 +84,11 @@ trait RESTActions {
         }
     }
 
-    protected function get_editable_properties (Request $request, $model) {
-
+    protected function set_editable_properties (Request $request, $model) {
+        $guarded_properties = $this->get_guarded_properties($request, $model, 'update');
+        if (count($guarded_properties) > 0) {
+            $model->guard($guarded_properties);
+        }
     }
     protected function get_visible_relationships (Request $request, $model) {
 

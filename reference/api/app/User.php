@@ -22,6 +22,11 @@ class User extends Model implements
      */
     // protected $fillable = ['email', 'name'];
 
+    public function __construct (array $attributes = []) {
+        parent::__construct($attributes);
+        $this->fillable(self::$PROPERTIES);
+    }
+
 
     public static function VALIDATION (Request $request, $id = null) {
         $validation = [
@@ -45,12 +50,26 @@ class User extends Model implements
     ];
 
     public static $PROPERTIES_PERMISSIONS = [
-        'email' => ['self'],
-        'name' => ['all'],
-        'password' => ['none'],
-        'token' => ['admin'],
-        'expires' => ['self', 'admin']
-
+        'email' => [
+            'read' => ['self'],
+            'update' => ['self']
+        ],
+        'name' => [
+            'read' => ['all'],
+            'update' => ['self']
+        ],
+        'password' => [
+            'read' => ['none'],
+            'update' => ['none']
+        ],
+        'token' => [
+            'read' => ['admin'],
+            'update' => ['admin', 'self']
+        ],
+        'expires' => [
+            'read' => ['self', 'admin'],
+            'update' => ['none']
+        ]
     ];
 
     public static $RELATIONSHIPS = [
