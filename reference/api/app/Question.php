@@ -33,7 +33,7 @@ class Question extends Model {
     public static $PROPERTIES_PERMISSIONS = [
         'title' => [
             'read' => ['all'],
-            'update' => ['admin']
+            'update' => ['self']
         ],
         'text' => [
             'read' => ['admin'],

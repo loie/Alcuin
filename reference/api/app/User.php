@@ -50,19 +50,19 @@ class User extends Model implements
 
     public static $PROPERTIES_PERMISSIONS = [
         'email' => [
-            'read' => ['none'],
-            'update' => ['self']
+            'read' => ['self'],
+            'update' => ['none']
         ],
         'name' => [
             'read' => ['all'],
-            'update' => ['self']
+            'update' => ['none']
         ],
         'password' => [
             'read' => ['none'],
             'update' => ['none']
         ],
         'token' => [
-            'read' => ['admin'],
+            'read' => ['none'],
             'update' => ['admin', 'self']
         ],
         'expires' => [

@@ -19,8 +19,6 @@ trait RESTActions {
         'unprocessable' => 422,
     ];
 
-    
-
     protected function get_actionable_properties (Request $request, $model, $operation) {
         $user = $request->user();
         $m = get_class($model);
@@ -87,8 +85,12 @@ trait RESTActions {
 
     protected function set_editable_properties (Request $request, $model) {
         $fillable_properties = $this->get_actionable_properties($request, $model, 'update');
-        if (count($fillable_properties) > 0) {
-            $model->fillable($fillable_properties);
+        $model->fillable($fillable_properties);
+        if (count($fillable_properties) === 0) {
+            $m = get_class($model);
+            $model->guard($m::$PROPERTIES);
+        } else {
+            $model->guard([]);
         }
     }
     protected function get_visible_relationships (Request $request, $model) {
