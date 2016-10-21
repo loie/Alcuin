@@ -31,8 +31,14 @@ class Question extends Model {
     ];
 
     public static $PROPERTIES_PERMISSIONS = [
-        'title' => ['all'],
-        'text' => ['admin'],
+        'title' => [
+            'read' => ['all'],
+            'update' => ['admin']
+        ],
+        'text' => [
+            'read' => ['admin'],
+            'update' => ['admin']
+        ]
     ];
 
     public static $RELATIONSHIPS = [

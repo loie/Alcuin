@@ -26,7 +26,10 @@ class Tag extends Model {
     ];
 
     public static $PROPERTIES_PERMISSIONS = [
-        'name' => ['none']
+        'name' => [
+            'read' => ['all'],
+            'update' => ['none']
+        ]
     ];
 
     public static $RELATIONSHIPS = [

@@ -28,14 +28,13 @@ class User extends Model implements
     }
 
 
-    public static function VALIDATION (Request $request, $id = null) {
+    public static function VALIDATION (Request $request, $model = null) {
         $validation = [
+            'name' => 'max:255|min:2',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|max:64|min:64'
         ];
-        if (!is_null($id)) {
-            $class = self::class;
-            $model = $class::find($id);
+        if (!is_null($model)) {
             $validation['email'] .= ",{$model->email},email";;
         }
         return $validation;
@@ -51,7 +50,7 @@ class User extends Model implements
 
     public static $PROPERTIES_PERMISSIONS = [
         'email' => [
-            'read' => ['self'],
+            'read' => ['none'],
             'update' => ['self']
         ],
         'name' => [

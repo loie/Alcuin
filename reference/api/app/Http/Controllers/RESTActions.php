@@ -29,12 +29,13 @@ trait RESTActions {
         foreach ($properties as $property) {
             $permissions = $m::$PROPERTIES_PERMISSIONS;
             $is_valid = false;
-            if (in_array(self::ALL, $permissions[$property])) {
+            // var_dump($permissions);
+            if (in_array(self::ALL, $permissions[$property][$operation])) {
 
                 $is_valid = true;
-            } else if (in_array(self::NONE, $permissions[$property])) {
+            } else if (in_array(self::NONE, $permissions[$property][$operation])) {
                 $is_valid = false;
-            } else if (in_array(self::MY, $permissions[$property])) {
+            } else if (in_array(self::MY, $permissions[$property][$operation])) {
                 if ($m === 'App\\User') {
                     $is_valid = ($model->id === $user->id);
                 } else {
@@ -61,7 +62,7 @@ trait RESTActions {
                 foreach ($user->roles as $role) {
                     array_push($role_names, $role->type);
                 }
-                $intersect = array_intersect($permissions[$property], $role_names);
+                $intersect = array_intersect($permissions[$property][$operation], $role_names);
                 if (count($intersect) > 0) {
                     $is_valid = true;
                 }
@@ -85,9 +86,9 @@ trait RESTActions {
     }
 
     protected function set_editable_properties (Request $request, $model) {
-        $guarded_properties = $this->get_guarded_properties($request, $model, 'update');
-        if (count($guarded_properties) > 0) {
-            $model->guard($guarded_properties);
+        $fillable_properties = $this->get_actionable_properties($request, $model, 'update');
+        if (count($fillable_properties) > 0) {
+            $model->fillable($fillable_properties);
         }
     }
     protected function get_visible_relationships (Request $request, $model) {
@@ -180,6 +181,7 @@ trait RESTActions {
 
     private function save_model (Request $request, $model, $fullOverwrite = false) {
         $m = get_class($model);
+        $this->set_editable_properties($request, $model);
         if ($fullOverwrite) {
             $attributes = $model->getAttributes();
             foreach ($attributes as $key => $value) {
@@ -335,49 +337,48 @@ trait RESTActions {
         $this->save_model($request, $model);
 
         // handle output
-        $model->makeHidden('user_id')->toArray();
         $value = $this->get_view($request, $model);
         return $this->respond('created', $value);
     }
 
-    public function patch (Request $request, $id) {
+    protected function handle_update (Request $request, $id, $fullOverwrite) {
         $m = self::MODEL;
-        try {
-            $this->validate($request, $m::VALIDATION($request, $id));
-        } catch (ValidationException $e) {
-            $value = $this->get_validation_exception_values($e);
-            return $this->respond('created', $value);
-        }
         $model = $m::find($id);
         if (is_null($model)){
             return $this->respond('not_found');
         }
-        $this->save_model($request, $model, false);
+        try {
+            $validation = $m::VALIDATION($request, $model);
+            if (!$fullOverwrite) { // just check the given properties
+                $editable_properties = $this->get_actionable_properties($request, $model, 'update');
+                $validation_properties = array_intersect($m::$PROPERTIES, $editable_properties, array_keys($request->input()));
+                $validation_trim = [];
+                array_walk($validation_properties, function ($property) use (&$validation_trim, &$validation) {
+                    if (array_key_exists($property, $validation)) {
+                        $validation_trim[$property] = $validation[$property];
+                    }
+                    // print_r($validation_trim);
+                });
+                $validation = $validation_trim;
+            }
+            $this->validate($request, $validation);
+        } catch (ValidationException $e) {
+            $value = $this->get_validation_exception_values($e);
+            return $this->respond('not_valid', $value);
+        }
+        $this->save_model($request, $model, $fullOverwrite);
 
         // handle output
-        $model->makeHidden('user_id')->toArray();
         $value = $this->get_view($request, $model);
         return $this->respond('done', $value);
     }
 
-    public function update (Request $request, $id) {
-        $m = self::MODEL;
-        try {
-            $this->validate($request, $m::VALIDATION($request, $id));
-        } catch (ValidationException $e) {
-            $value = $this->get_validation_exception_values($e);
-            return $this->respond('created', $value);
-        }
-        $model = $m::find($id);
-        if (is_null($model)){
-            return $this->respond('not_found');
-        }
-        $this->save_model($request, $model, true);
+    public function patch (Request $request, $id) {
+        return $this->handle_update($request, $id, false);
+    }
 
-        // handle output
-        $model->makeHidden('user_id')->toArray();
-        $value = $this->get_view($request, $model);
-        return $this->respond('done', $value);
+    public function update (Request $request, $id) {
+        return $this->handle_update($request, $id, true);
     }
 
     public function delete ($id) {
