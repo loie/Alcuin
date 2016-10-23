@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tag extends Model {
 
-    protected $guarded = [];
+    const TYPE = 'tag';
+
     protected $hidden = ['questions', 'answers', 'pivot'];
     protected $dates = [];
 

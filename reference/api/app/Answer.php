@@ -10,9 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Answer extends Model {
 
-    protected $fillable = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvoted', 'dummy'];
+    const TYPE = 'answer';
+
     protected $guarded = [];
-    protected $visible = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvoted', 'dummy'];
+    protected $hidden = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvotes', 'dummy', 'pivot'];
     protected $dates = [];
 
     public static function VALIDATION (Request $request) {
@@ -21,6 +22,39 @@ class Answer extends Model {
         ];
         return $validation;
     }
+
+    public static $PROPERTIES = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvotes', 'dummy'];
+
+    public static $PROPERTIES_PERMISSIONS = [
+        'text' => [
+            'read' => ['all'],
+            'update' => ['self']
+        ],
+        'created' => [
+            'read' => ['admin'],
+            'update' => ['admin']
+        ],
+        'edited' => [
+            'read' => ['admin'],
+            'update' => ['admin']
+        ],
+        'accepted' => [
+            'read' => ['admin'],
+            'update' => ['admin']
+        ],
+        'upvotes' => [
+            'read' => ['admin'],
+            'update' => ['admin']
+        ],
+        'downvotes' => [
+            'read' => ['admin'],
+            'update' => ['admin']
+        ],
+        'dummy' => [
+            'read' => ['admin'],
+            'update' => ['admin']
+        ]
+    ];
 
     public static $RELATIONSHIPS = [
         'belongs_to' => [
@@ -33,6 +67,19 @@ class Answer extends Model {
         ],
         'has_many' => [],
         'belongs_to_and_has_many' => []
+    ];
+
+    public static $RELATIONSHIP_PERMISSIONS = [
+        'user' => [
+            'create' => ['admin'],
+            'read' => ['all'],
+            'delete' => ['admin']
+        ],
+        'question' => [
+            'create' => ['self'],
+            'read' => ['all'],
+            'delete' => ['none']
+        ]
     ];
 
     public $timestamps = false;

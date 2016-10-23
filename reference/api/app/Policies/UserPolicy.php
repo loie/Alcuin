@@ -17,7 +17,8 @@ class UserPolicy
         if (is_string($viewUser)) {
             return true;
         }
-        return $user->id === $viewUser->id;
+        return true;
+        // return $user->id === $viewUser->id;
     }
 
     public function update (User $user, User $viewUser) {
@@ -30,5 +31,13 @@ class UserPolicy
 
     public function patch (User $user, User $viewUser) {
         return true;
+    }
+
+    public function viewRole (User $user, Role $role) {
+        return true;
+    }
+
+    public function viewQuestion (User $user, Question $question) {
+        return false;
     }
 }

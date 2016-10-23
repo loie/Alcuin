@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Question extends Model {
 
-    protected $fillable = ['title', 'text'];
-    protected $guarded = [];
+    const TYPE = 'question';
+
     protected $hidden = ['answers', 'tags', 'user', 'pivot'];
     protected $dates = [];
 
@@ -56,6 +56,24 @@ class Question extends Model {
             'tags' => [
                 'type' => 'tag'
             ]
+        ]
+    ];
+
+    public static $RELATIONSHIP_PERMISSIONS = [
+        'user' => [
+            'create' => ['admin'],
+            'read' => ['all'],
+            'delete' => ['admin']
+        ],
+        'answers' => [
+            'create' => ['self'],
+            'read' => ['all'],
+            'delete' => ['none']
+        ],
+        'tags' => [
+            'create' => ['self', 'admin'],
+            'read' => ['none'],
+            'delete' => ['admin']
         ]
     ];
 

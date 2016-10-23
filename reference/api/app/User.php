@@ -22,6 +22,8 @@ class User extends Model implements
      */
     // protected $fillable = ['email', 'name'];
 
+    const TYPE = 'user';
+
     public function __construct (array $attributes = []) {
         parent::__construct($attributes);
         $this->fillable(self::$PROPERTIES);
@@ -85,6 +87,24 @@ class User extends Model implements
             'roles' => [
                 'type' => 'role'
             ]
+        ]
+    ];
+
+    public static $RELATIONSHIP_PERMISSIONS = [
+        'roles' => [
+            'create' => ['admin'],
+            'read' => ['self'],
+            'delete' => ['admin']
+        ],
+        'questions' => [
+            'create' => ['self'],
+            'read' => ['all'],
+            'delete' => ['none']
+        ],
+        'answers' => [
+            'create' => ['self', 'admin'],
+            'read' => ['self'],
+            'delete' => ['admin']
         ]
     ];
 

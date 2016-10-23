@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Role extends Model {
 
-    protected $fillable = ['name'];
-    protected $guarded = [];
+    const TYPE = 'role';
+
     protected $hidden = ['users', 'pivot'];
     protected $dates = [];
 

@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers;
 
+use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,19 @@ trait RESTActions {
         'conflict' => 409,
         'unprocessable' => 422,
     ];
+
+    private function has_permission ($user, $required_permissions) {
+        $role_names = [];
+        $has = false;
+        foreach ($user->roles as $role) {
+            array_push($role_names, $role->type);
+        }
+        $intersect = array_intersect($required_permissions, $role_names);
+        if (count($intersect) > 0) {
+            $has = true;
+        }
+        return $has;
+    }
 
     protected function get_actionable_properties (Request $request, $model, $operation) {
         $user = $request->user();
@@ -56,14 +70,7 @@ trait RESTActions {
                 }
             }
             if (!$is_valid) {
-                $role_names = [];
-                foreach ($user->roles as $role) {
-                    array_push($role_names, $role->type);
-                }
-                $intersect = array_intersect($permissions[$property][$operation], $role_names);
-                if (count($intersect) > 0) {
-                    $is_valid = true;
-                }
+                $is_valid = $this->has_permission($user, $permissions[$property][$operation]);
             }
             // var_dump($is_valid, $property);
             if ($is_valid) {
@@ -93,7 +100,51 @@ trait RESTActions {
             $model->guard([]);
         }
     }
-    protected function get_visible_relationships (Request $request, $model) {
+    protected function can_view_relation (User $user, $model, $relation_name) {
+        $m = get_class($model);
+        $permissions = $m::$RELATIONSHIP_PERMISSIONS;
+        $permission = $permissions[$relation_name]['read'];
+        $allowed = false;
+        if (in_array(self::NONE, $permission)) {
+            $allowed = false;
+        } else if (in_array(self::ALL, $permission)) {
+            $allowed = true;
+        } else if ($this->has_permission($user, $permission)) {
+            $allowed = true;
+        } else if (in_array(self::MY, $permission)) {
+            // var_dump($permission);
+            if (get_class($user) === get_class($model)) {
+                if ($user->id === $model->id) {
+                    $allowed = true;
+                }
+            } else {
+                $model_type = $model::TYPE;
+                // var_dump($model_type);
+                $relationship_types = $user::$RELATIONSHIPS;
+                $associated = false;
+                foreach ($relationship_types as $relationship_type) {
+                    if ($allowed) {
+                        break;
+                    }
+                    foreach ($relationship_type as $name => $description) {
+                        if ($allowed) {
+                            break;
+                        }
+                        if ($description['type'] === $model_type) {
+                            $entities = $user->{$name};
+                            var_dump($entities);
+                            foreach ($entities as $entity) {
+                                if ($entity === $model) {
+                                    $allowed = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $allowed;
 
     }
     protected function get_creatable_relationships (Request $request, $model) {
@@ -107,6 +158,7 @@ trait RESTActions {
         $m = get_class($model);
         $relationships = [];
         $included = [];
+        $user = $request->user();
         $all_relations = array_merge($m::$RELATIONSHIPS['belongs_to'], $m::$RELATIONSHIPS['has_many'], $m::$RELATIONSHIPS['belongs_to_and_has_many']);
         // refresh relationships from db
         $keys = array_keys($all_relations);
@@ -117,18 +169,22 @@ trait RESTActions {
                 if (array_key_exists($name, $m::$RELATIONSHIPS['has_many']) || array_key_exists($name, $m::$RELATIONSHIPS['belongs_to_and_has_many'])) {
                     $relationship_array = [];
                     foreach($relations as $relation) {
-                        $items = $this->get_relation_item_array($request, $description, $relation);
-                        array_push($relationship_array, $items['relation_item']);
-                        array_push($included, $items['inclusion_item']);
+                        if ($this->can_view_relation($user, $model, $name)) {
+                            $items = $this->get_relation_item_array($request, $description, $relation);
+                            array_push($relationship_array, $items['relation_item']);
+                            array_push($included, $items['inclusion_item']);
+                        }
                     }
                     if (count($relationship_array) > 0) {
                         $relationships[$name] = $relationship_array;
                     }
                 } else if (array_key_exists($name, $m::$RELATIONSHIPS['belongs_to'])) {
                     $relation = $relations;
-                    $item = $this->get_relation_item_array($request, $description, $relation);
-                    $relationships[$name] = $item['relation_item'];
-                    array_push($included, $item['inclusion_item']);
+                    if ($this->can_view_relation($user, $model, $name)) {
+                        $item = $this->get_relation_item_array($request, $description, $relation);
+                        $relationships[$name] = $item['relation_item'];
+                        array_push($included, $item['inclusion_item']);
+                    }
                 }
             }
         }
