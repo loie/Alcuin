@@ -27,6 +27,7 @@ class Role extends Model {
 
     public static $PROPERTIES_PERMISSIONS = [
         'type' => [
+            'create' => ['admin'],
             'read' => ['admin'],
             'update' => ['admin']
         ]

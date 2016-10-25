@@ -13,7 +13,7 @@ class Answer extends Model {
     const TYPE = 'answer';
 
     protected $guarded = [];
-    protected $hidden = ['text', 'created', 'edited', 'accepted', 'upvotes', 'downvotes', 'dummy', 'pivot'];
+    protected $hidden = ['pivot'];
     protected $dates = [];
 
     public static function VALIDATION (Request $request) {
@@ -27,30 +27,37 @@ class Answer extends Model {
 
     public static $PROPERTIES_PERMISSIONS = [
         'text' => [
+            'create' => ['all'],
             'read' => ['all'],
-            'update' => ['self']
+            'update' => ['admin']
         ],
         'created' => [
+            'create' => ['admin'],
             'read' => ['admin'],
             'update' => ['admin']
         ],
         'edited' => [
+            'create' => ['admin'],
             'read' => ['admin'],
             'update' => ['admin']
         ],
         'accepted' => [
+            'create' => ['admin'],
             'read' => ['admin'],
             'update' => ['admin']
         ],
         'upvotes' => [
+            'create' => ['admin'],
             'read' => ['admin'],
             'update' => ['admin']
         ],
         'downvotes' => [
+            'create' => ['admin'],
             'read' => ['admin'],
             'update' => ['admin']
         ],
         'dummy' => [
+            'create' => ['admin'],
             'read' => ['admin'],
             'update' => ['admin']
         ]

@@ -28,6 +28,7 @@ class Tag extends Model {
 
     public static $PROPERTIES_PERMISSIONS = [
         'name' => [
+            'create' => ['user'],
             'read' => ['all'],
             'update' => ['none']
         ]
@@ -40,6 +41,14 @@ class Tag extends Model {
             'questions' => [
                 'type' => 'question'
             ]
+        ]
+    ];
+
+    public static $RELATIONSHIP_PERMISSIONS = [
+        'questions' => [
+            'create' => ['self'],
+            'read' => ['all'],
+            'delete' => ['none']
         ]
     ];
 

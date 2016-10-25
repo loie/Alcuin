@@ -24,6 +24,7 @@ class QuestionPolicy
 
     public function view (User $user, $question) {
         $isAllowed = false;
+        $isAllowed = true;
         if (is_string($question)) {
             return true;
         }
@@ -33,7 +34,9 @@ class QuestionPolicy
                 break;
             }
         }
-        $isAllowed = ($user->id === $question->user_id);
+        if ($isAllowed === false) {
+            $isAllowed = ($user->id === $question->user_id);
+        }
         return $isAllowed;
     }
 

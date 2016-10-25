@@ -41,7 +41,6 @@ trait RESTActions {
         foreach ($properties as $property) {
             $permissions = $m::$PROPERTIES_PERMISSIONS;
             $is_valid = false;
-            // var_dump($permissions);
             if (in_array(self::ALL, $permissions[$property][$operation])) {
 
                 $is_valid = true;
@@ -72,7 +71,6 @@ trait RESTActions {
             if (!$is_valid) {
                 $is_valid = $this->has_permission($user, $permissions[$property][$operation]);
             }
-            // var_dump($is_valid, $property);
             if ($is_valid) {
                 array_push($actionable_properties, $property);
             }
@@ -91,7 +89,11 @@ trait RESTActions {
     }
 
     protected function set_editable_properties (Request $request, $model) {
-        $fillable_properties = $this->get_actionable_properties($request, $model, 'update');
+        $func = 'update';
+        if ($request->method() === 'POST') {
+            $func = 'create';
+        }
+        $fillable_properties = $this->get_actionable_properties($request, $model, $func);
         $model->fillable($fillable_properties);
         if (count($fillable_properties) === 0) {
             $m = get_class($model);
@@ -100,10 +102,11 @@ trait RESTActions {
             $model->guard([]);
         }
     }
-    protected function can_view_relation (User $user, $model, $relation_name) {
+
+    protected function can_do_relation (User $user, $model, $relation_name, $action, $relation = null) {
         $m = get_class($model);
         $permissions = $m::$RELATIONSHIP_PERMISSIONS;
-        $permission = $permissions[$relation_name]['read'];
+        $permission = $permissions[$relation_name][$action];
         $allowed = false;
         if (in_array(self::NONE, $permission)) {
             $allowed = false;
@@ -112,14 +115,22 @@ trait RESTActions {
         } else if ($this->has_permission($user, $permission)) {
             $allowed = true;
         } else if (in_array(self::MY, $permission)) {
-            // var_dump($permission);
             if (get_class($user) === get_class($model)) {
                 if ($user->id === $model->id) {
-                    $allowed = true;
+                    if ($relation === null) {
+                        $allowed = true;
+                    } else {
+                        $test = $model->{$relation_name}()->where('id', $relation->id)->first();
+                        if ($test === null) {
+                            $allowed = false;
+                        } else {
+                            $allowed = true;
+                        }
+                    }
                 }
             } else {
+                // type self means: the model is associated with the currently logged in user
                 $model_type = $model::TYPE;
-                // var_dump($model_type);
                 $relationship_types = $user::$RELATIONSHIPS;
                 $associated = false;
                 foreach ($relationship_types as $relationship_type) {
@@ -132,9 +143,8 @@ trait RESTActions {
                         }
                         if ($description['type'] === $model_type) {
                             $entities = $user->{$name};
-                            var_dump($entities);
                             foreach ($entities as $entity) {
-                                if ($entity === $model) {
+                                if ((get_class($entity) === get_class($model)) && ($entity->id === $model->id)) {
                                     $allowed = true;
                                     break;
                                 }
@@ -145,13 +155,18 @@ trait RESTActions {
             }
         }
         return $allowed;
-
     }
-    protected function get_creatable_relationships (Request $request, $model) {
 
+    protected function can_view_relation (User $user, $model, $relation_name, $relation = null) {
+        return $this->can_do_relation($user, $model, $relation_name, 'read', $relation);
     }
-    protected function get_deletable_relationships (Request $request, $model) {
 
+    protected function can_create_relation (User $user, $model, $relation_name, $relation = null) {
+        return $this->can_do_relation($user, $model, $relation_name, 'create', $relation);
+    }
+
+    protected function can_delete_relation (User $user, $model, $relation_name, $relation = null) {
+        return $this->can_do_relation($user, $model, $relation_name, 'delete', $relation);
     }
 
     private function get_view (Request $request, $model) {
@@ -248,54 +263,68 @@ trait RESTActions {
             $model->fill($attributes);
         }
         $model->fill($request->input());
+        $user = $request->user();
         if (array_key_exists('user', $m::$RELATIONSHIPS['belongs_to'])) {
-            $model->user()->associate($request->user());
-        }
-        $save_relations = function ($relation) use ($model, $request, $fullOverwrite) {
-            $id = array_search($relation, config('names.plural'));
-            $className = null;
-            if ($id === null) {
-                $className = 'App\\' . config('names.class.' . $relation);
-            } else {
-                $className = 'App\\' . config('names.class.' . $id);
+            if ($this->can_create_relation($user, $model, 'user', $user)) {
+                $model->user()->associate($user);
             }
-            if ($request->has($relation)) {
-                $id = $request->input($relation);
+        }
+        $save_relations = function ($relation_name) use ($model, $request, $fullOverwrite, $user) {
+            $type = array_search($relation_name, config('names.plural'));
+            $className = null;
+            if ($type === null) {
+                $className = 'App\\' . config('names.class.' . $relation_name);
+            } else {
+                $className = 'App\\' . config('names.class.' . $type);
+            }
+            if ($request->has($relation_name)) {
+                $id = $request->input($relation_name);
                 if (is_numeric($id)) { // belongs to relationship
-                    $model->{$relation}()->associate($id);
+                    $relation = $className::find($id);
+                    if ($this->can_create_relation($user, $model, $relation_name, $relation)) {
+                        $model->{$relation_name}()->associate($id);
+                    }
                 } else if (is_array($id)) {
                     // delete all items that were in relationship before, but not after the update
                     // get class name
-                    $key = array_search($relation, config('names.plural'));
+                    $key = array_search($relation_name, config('names.plural'));
                     // get instances of the references items
                     $links = $className::find($id);
                     $new_ids = $id;
                     
-                    $relations = $model->{$relation};
+                    $relations = $model->{$relation_name};
                     $old_ids = [];
                     foreach($relations as $rel) {
                         array_push($old_ids, $rel->id);
                     }
                     $in_old_but_not_in_new = array_diff($old_ids, $new_ids);
-                    $className::destroy($in_old_but_not_in_new);
+                    if ($this->can_delete_relation($user, $model, $relation_name)) {
+                        $className::destroy($in_old_but_not_in_new);
+                    }
 
-                    $model->{$relation}()->saveMany($links);
+                    foreach ($links as $link) {
+                        if ($this->can_create_relation($user, $model, $relation_name, $link)) {
+                            $model->{$relation_name}()->save($link);
+                        }
+                    }
                 }
             }
             else {
                 // request has no definition of this relation
                 if ($fullOverwrite) {
-                    $relationType = get_class($model->{$relation}());
+                    $relationType = get_class($model->{$relation_name}());
                     if ('Illuminate\Database\Eloquent\Relations\BelongsTo' === $relationType) {
                         $value = ['error' => 'belongs to relation is missing'];
                         $this->respond('unprocessable', $value);
                     } else if ('Illuminate\Database\Eloquent\Relations\HasMany' === $relationType) {
-                        $instances = $model->{$relation};
+                        $instances = $model->{$relation_name};
                         $ids = [];
                         foreach ($instances as $item) {
                             array_push($ids, $item->id);
                         }
-                        $className::destroy($ids);
+                        if ($this->can_destroy_relation($user, $model, $type)) {
+                            $className::destroy($ids);
+                        }
                     }
                 }
             }
@@ -318,19 +347,48 @@ trait RESTActions {
         $relationships_belongs_to_and_has_many = array_keys($m::$RELATIONSHIPS['belongs_to_and_has_many']);
         array_walk(
             $relationships_belongs_to_and_has_many,
-            function ($relation) use ($model, $request, $fullOverwrite) {
+            function ($relation_name) use ($model, $request, $fullOverwrite, $user, $m) {
                 $relation_array = null;
-                if ($request->input($relation) === null) {
+                if ($request->input($relation_name) === null) {
                     if ($fullOverwrite) {
                         $relation_array = [];
                     }
                 }
                 else {
-                    $relation_array = $request->input($relation);
+                    $relation_array = $request->input($relation_name);
                 }
-                if ($model->{$relation}() && $relation_array !== null) {
+                if ($model->{$relation_name}() && $relation_array !== null) {
+                    $items = $model->{$relation_name};
+                    $old_ids = [];
+                    foreach ($items as $item) {
+                        array_push($old_ids, $item->id);
+                    }
+                    $in_both = array_intersect($old_ids, $relation_array);
+                    $in_old_but_not_in_new = array_diff($old_ids, $in_both);
+                    $sync_in_old_but_not_in_new = [];
+                    $relation_conf = $m::$RELATIONSHIPS['belongs_to_and_has_many'][$relation_name];
+                    $model_type = $relation_conf['type'];
+                    foreach ($in_old_but_not_in_new as $old_id) {
+                        $class_name = 'App\\' . config('names.class.' . $model_type);
+                        $instance = $class_name::find($old_id);
+                        if (!$this->can_delete_relation($user, $model, $relation_name, $instance)) {
+                            // cannot delete relation, so keep it
+                            array_push($sync_in_old_but_not_in_new, $old_id);
+                        }
+                    }
+                    $in_new_but_not_in_old = array_diff($relation_array, $in_both);
+                    $sync_in_new_but_not_in_old = [];
+                    foreach ($in_new_but_not_in_old as $new_id) {
+                        if ($this->can_create_relation($user, $model, $relation_name, $old_id)) {
+                            $class_name = 'App\\' . config('names.class.' . $model_type);
+                            $instance = $class_name::find($new_id);
+                            // cannot delete relation, so keep it
+                            array_push($sync_in_new_but_not_in_old, $new_id);
+                        }
+                    }
+                    $sync = array_merge($in_both, $sync_in_new_but_not_in_old, $sync_in_old_but_not_in_new);
                     try {
-                        $model->{$relation}()->sync($relation_array);
+                        $model->{$relation_name}()->sync($sync);
                     } catch (Exception $e) {
                         $value = ['error' => 'heise'];
                         return $this->respond('not_valid', $value);

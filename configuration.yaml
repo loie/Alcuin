@@ -30,6 +30,8 @@ architecture:
                     - admin
             properties:
                 permissions:
+                    create:
+                        - user
                     read:
                         - self
                         - admin
@@ -72,6 +74,8 @@ architecture:
                     - admin
             properties:
                 permissons:
+                    create:
+                        - user
                     read:
                         - all
                     update:

@@ -52,24 +52,29 @@ class User extends Model implements
 
     public static $PROPERTIES_PERMISSIONS = [
         'email' => [
+            'create' => ['admin'],
             'read' => ['self'],
-            'update' => ['none']
+            'update' => ['self', 'admin']
         ],
         'name' => [
+            'create' => ['admin'],
             'read' => ['all'],
-            'update' => ['none']
+            'update' => ['admin']
         ],
         'password' => [
+            'create' => ['admin'],
             'read' => ['none'],
-            'update' => ['none']
+            'update' => ['admin']
         ],
         'token' => [
+            'create' => ['admin'],
             'read' => ['none'],
             'update' => ['admin', 'self']
         ],
         'expires' => [
+            'create' => ['admin'],
             'read' => ['self', 'admin'],
-            'update' => ['none']
+            'update' => ['admin']
         ]
     ];
 
@@ -93,18 +98,18 @@ class User extends Model implements
     public static $RELATIONSHIP_PERMISSIONS = [
         'roles' => [
             'create' => ['admin'],
-            'read' => ['self'],
+            'read' => ['all'],
             'delete' => ['admin']
         ],
         'questions' => [
-            'create' => ['self'],
-            'read' => ['all'],
-            'delete' => ['none']
+            'create' => ['user'],
+            'read' => ['self'],
+            'delete' => ['self']
         ],
         'answers' => [
-            'create' => ['self', 'admin'],
-            'read' => ['self'],
-            'delete' => ['admin']
+            'create' => ['none'],
+            'read' => ['none'],
+            'delete' => ['none']
         ]
     ];
 

@@ -32,10 +32,12 @@ class Question extends Model {
 
     public static $PROPERTIES_PERMISSIONS = [
         'title' => [
+            'create' => ['admin'],
             'read' => ['all'],
-            'update' => ['self']
+            'update' => ['self', 'admin']
         ],
         'text' => [
+            'create' => ['admin'],
             'read' => ['admin'],
             'update' => ['admin']
         ]
@@ -62,17 +64,17 @@ class Question extends Model {
     public static $RELATIONSHIP_PERMISSIONS = [
         'user' => [
             'create' => ['admin'],
-            'read' => ['all'],
+            'read' => ['self'],
             'delete' => ['admin']
         ],
         'answers' => [
             'create' => ['self'],
-            'read' => ['all'],
+            'read' => ['self'],
             'delete' => ['none']
         ],
         'tags' => [
-            'create' => ['self', 'admin'],
-            'read' => ['none'],
+            'create' => ['admin'],
+            'read' => ['self'],
             'delete' => ['admin']
         ]
     ];
