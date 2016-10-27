@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Providers;
+
+use App\{{authentication_class_name}};
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
+class AuthServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
+    }
+
+    /**
+     * Boot the authentication services for the application.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Auth::viaRequest('{{url_root}}', function ($request) {
+            ${{authentication}} = null;
+            ${{id_property}} = $request->hasHeader('X-{{id_property}}') ? $request->header('X-{{id_property}}') : null;
+            $token = $request->hasHeader('X-token') ? $request->header('X-token') : null;
+            try {
+                ${{authentication}} = {{authentication_class_name}}::where('{{id_property}}', ${{id_property}})->where('token', $token)->firstOrFail();
+            } catch (ModelNotFoundException $e) {
+                
+            }
+            return ${{authentication}};
+        });
+    }
+}

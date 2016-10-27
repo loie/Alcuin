@@ -1,8 +1,10 @@
 <?php
-require 'libs/Spyc.php';
+require 'alcuin/libs/Spyc.php';
 require 'output.php';
 require 'utils.php';
 require 'db.php';
+require 'lumen_install.php';
+require 'lumen_rest.php';
 
 function alcuin ($file) {
     // try to parse this file and use it as configuration object
@@ -89,7 +91,35 @@ function alcuin ($file) {
                 array(
                     'description' => 'Creating instances',
                     'func' => 'create_instances'
-                )
+                ),
+                // array(
+                //     'description' => 'Installing Lumen',
+                //     'func' => 'install_lumen'
+                // ),
+                array(
+                    'description' => 'Creating Lumen Configuration Files',
+                    'func' => 'create_lumen_config'
+                ),
+                array(
+                    'description' => 'Creating Lumen Middleware',
+                    'func' => 'create_lumen_middleware'
+                ),
+                array(
+                    'description' => 'Creating Lumen Models',
+                    'func' => 'create_lumen_models'
+                ),
+                array(
+                    'description' => 'Creating Lumen Controllers',
+                    'func' => 'create_lumen_controllers'
+                ),
+                array(
+                    'description' => 'Creating Lumen Policies',
+                    'func' => 'create_lumen_policies'
+                ),
+                array(
+                    'description' => 'Creating Lumen Observers',
+                    'func' => 'create_lumen_observers'
+                ),
             ];
             foreach ($processings as $process) {
                 open_sub($process['description']);

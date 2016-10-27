@@ -2,15 +2,17 @@
 drop_old_db: true
 db:
     host: localhost
+    port: 3306
     name: test
     user: root
     password: bernie
 web:
-    dir_root: api
+    service_dir: api
     url_root: /
     assets: assets
     login_url: http://example.com/login
     signup_url:  http://example.com/signup
+    api_key: 12345678901234567890123456789012
 salt: [2, 3, 5, 7, 8, 13, 14, 20]
 architecture:
     use_for_permission: role

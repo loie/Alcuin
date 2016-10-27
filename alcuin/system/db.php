@@ -1,4 +1,4 @@
-<?php
+s<?php
     const BELONGS_TO = 'belongs_to';
     const HAS_MANY = 'has_many';
     const BELONGS_TO_AND_HAS_MANY = 'belongs_to_and_has_many';
@@ -9,7 +9,7 @@
         assert($models !== null);
         foreach ($models as $model_name => $model) {
             next_item('Creating table for Model <code>' . $model_name . '</code>');        
-            $model_name_table = get_model_table_name($model_name, $model);
+            $model_name_table = get_model_plural_name($model_name, $model);
 
             $query_string = 'CREATE TABLE `' . $configuration->db->name . '`.`' . $model_name_table . '` (';
             $statements = [];
@@ -84,7 +84,7 @@
                     $skip = false;
                     $has_relation = false;
                     if (isset($relation_properties->type)) {
-                        $model_table_name = get_model_table_name($model_name, $model_properties);
+                        $model_table_name = get_model_plural_name($model_name, $model_properties);
                         switch ($relation_properties->type) {
                             case BELONGS_TO:
                                 $has_relation = true;
@@ -262,7 +262,7 @@
             try {
                 // creating history table
                 next_item('Creating history table for <code>' . $model_name . '</code>');
-                $table_name = get_model_table_name($model_name, $model_properties);
+                $table_name = get_model_plural_name($model_name, $model_properties);
                 $query = fill_with_data($prepared_query, array(
                         'db_name' => $configuration->db->name,
                         'table_name' => $table_name
@@ -360,15 +360,15 @@
                         $skip = false;
                         $has_relation = false;
                         if (isset($relation_properties->type)) {
-                            $model_table_name = get_model_table_name($model_name, $model_properties);
+                            $model_table_name = get_model_plural_name($model_name, $model_properties);
                             switch ($relation_properties->type) {
                                 case BELONGS_TO:
                                     $query = fill_with_data($prepared_query, array(
                                         'db_name' => $configuration->db->name,
                                         'model_name' => $model_name,
-                                        'table_name' => get_model_table_name($model_name, $model_properties),
+                                        'table_name' => get_model_plural_name($model_name, $model_properties),
                                         'fk_model' => $relation_name,
-                                        'fk_table_name' => get_model_table_name($relation_properties->model, $configuration->architecture->models->{$relation_name})
+                                        'fk_table_name' => get_model_plural_name($relation_properties->model, $configuration->architecture->models->{$relation_name})
                                     ));
                                     next_item('Creating foreign key constraints for <code>' . $model_name . '</code> and <code>' . $relation_properties->model . '</code>');
                                     $connection->exec($query);
@@ -380,7 +380,7 @@
                                         'model_name' => $model_name,
                                         'table_name' => $relation_properties->via_table,
                                         'fk_model' => $relation_properties->model,
-                                        'fk_table_name' => get_model_table_name($relation_properties->model, $configuration->architecture->models->{$relation_properties->model})
+                                        'fk_table_name' => get_model_plural_name($relation_properties->model, $configuration->architecture->models->{$relation_properties->model})
                                     ));
                                     next_item('Creating foreign key constraints for <code>' . $model_name . '</code> and <code>' . $relation_properties->model . '</code>');
                                     $connection->exec($query);
@@ -418,7 +418,7 @@
                         }
                         $insert_query = fill_with_data($prepared_insert_query, array(
                             'db_name' => $configuration->db->name,
-                            'table_name' => get_model_table_name($model_name, $model_properties),
+                            'table_name' => get_model_plural_name($model_name, $model_properties),
                             'column_names' => $column_names,
                             'values' => $values
                         ));
@@ -428,18 +428,6 @@
                 }
             }
         }
-    }
-
-    /* Get table name for model */
-    function get_model_table_name ($model_name, $model_properties) {
-        $model_table_name = null;
-        if (is_object($model_properties)) {
-            $model_table_name = $model->name_plural;
-        }
-        if (is_null($model_table_name)) {
-            $model_table_name = $model_name . 's';
-        }
-        return $model_table_name;
     }
         
     /* returns an active database connection */
