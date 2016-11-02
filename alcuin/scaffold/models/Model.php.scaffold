@@ -1,0 +1,33 @@
+<?php
+
+namespace App;
+
+use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Model;
+{{usages}}
+
+class {{class_name}} extends Model {{implements}}{
+    {{inner_usages}}
+    const TYPE = '{{type}}';
+
+    public $timestamps = false;
+    protected $hidden = {{hidden}};
+
+    public static function VALIDATION (Request $request, $model = null) {
+        $validation = {{validation}};
+        {{validation_authentication}}
+        return $validation;
+    }
+
+    public static $PROPERTIES = {{properties}};
+
+    public static $PROPERTIES_PERMISSIONS = {{property_permissions}};
+
+    public static $RELATIONSHIPS = {{relationships}};
+
+    public static $RELATIONSHIP_PERMISSIONS = {{relationship_permissions}};
+
+    {{belongs_to_functions}}
+    {{has_many_functions}}
+    {{belongs_to_and_has_many_functions}}
+}

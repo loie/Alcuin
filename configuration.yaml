@@ -14,6 +14,7 @@ web:
     signup_url:  http://example.com/signup
     api_key: 12345678901234567890123456789012
 salt: [2, 3, 5, 7, 8, 13, 14, 20]
+pepper: ___[]+++
 architecture:
     use_for_permission: role
     use_for_auth: user
@@ -41,6 +42,7 @@ architecture:
                         - admin
                 list:
                     type:
+                        use_as_id: true
                         type: string
                         max_length: 255
             relations:
@@ -75,7 +77,7 @@ architecture:
                     - self
                     - admin
             properties:
-                permissons:
+                permissions:
                     create:
                         - user
                     read:
@@ -86,15 +88,16 @@ architecture:
                 list:
                     email:
                         type: email
-                        use_as_id: true
+                        use_as_id: true,
                     password:
                         type: hash
                         use_as_password: true
                         permissions:
-                            - read: none
+                            read:
+                                - none
                     name:
                         type: string
-                        max_length: 255
+                        validation: 'max:255|min:2'
                         null_allowed: true
             relations:
                 roles:
@@ -109,7 +112,7 @@ architecture:
                             - admin
                         delete:
                             - admin
-                questions:
+                question:
                     model: question
                     type: has_many
                     permissions:
@@ -154,6 +157,8 @@ architecture:
                     - admin
             properties:
                 permissions:
+                    create:
+                        - all
                     read:
                         - all
                     update:
@@ -190,7 +195,9 @@ architecture:
                     - self
                     - admin
             properties:
-                permission:
+                permissions:
+                    create:
+                        - all
                     read:
                         - all
                     update:
@@ -208,7 +215,7 @@ architecture:
                         type: datetime
                         default: now
                         permissions:
-                            update: 
+                            update:
                                 - none
                     edited:
                         type: datetime
@@ -269,6 +276,8 @@ architecture:
                     - admin
             properties:
                 permissions:
+                    create:
+                        - all
                     read:
                         - all
                     update:
@@ -281,7 +290,8 @@ architecture:
                         type: datetime
                         default: now
                         permissions:
-                            update: none
+                            update:
+                                - none
                     edited:
                         type: datetime
                         null_allowed: true

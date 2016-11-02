@@ -30,7 +30,7 @@ $app->withEloquent();
 
 /* Setup configuration */
 
-config({{config}}););
+config({{config}});
 
 
 

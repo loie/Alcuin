@@ -1,7 +1,4 @@
-s<?php
-    const BELONGS_TO = 'belongs_to';
-    const HAS_MANY = 'has_many';
-    const BELONGS_TO_AND_HAS_MANY = 'belongs_to_and_has_many';
+<?php
     const HISTORY_TABLE_PREFIX = '$__history__';
 
     function create_model_in_db ($configuration, $connection) {

@@ -1,0 +1,14 @@
+<?php
+
+namespace App\Http\Controllers;
+
+{{authentication_usages}}
+
+class {{class_name}}Controller extends Controller
+{
+    use RESTActions;
+    const MODEL = 'App\{{class_name}}';
+    const TYPE = '{{name}}';
+
+    {{authentication_method_override}}
+}

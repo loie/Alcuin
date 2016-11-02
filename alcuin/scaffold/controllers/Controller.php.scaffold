@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Laravel\Lumen\Routing\Controller as BaseController;
+
+class Controller extends BaseController
+{
+    protected static $SALT = {{salt}};
+    const PEPPER = '{{pepper}}';
+
+    const ALL = 'all';
+    const MY = 'self';
+    const NONE = 'none';
+
+
+    protected static function spice ($string) {
+        $i = 0;
+        $stringLength = strlen($string);
+        $spiced = $string;
+        foreach (self::$SALT as $index) {
+            if ($index < $stringLength) {
+                $spiced .= substr($string, $index, 1);
+            }
+        }
+        $spiced = self::PEPPER . $spiced . self::PEPPER;
+        return $spiced;
+    }
+}

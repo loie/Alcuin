@@ -92,10 +92,10 @@ function alcuin ($file) {
                     'description' => 'Creating instances',
                     'func' => 'create_instances'
                 ),
-                // array(
-                //     'description' => 'Installing Lumen',
-                //     'func' => 'install_lumen'
-                // ),
+                array(
+                    'description' => 'Installing Lumen',
+                    'func' => 'install_lumen'
+                ),
                 array(
                     'description' => 'Creating Lumen Configuration Files',
                     'func' => 'create_lumen_config'

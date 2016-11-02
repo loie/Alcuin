@@ -1,0 +1,51 @@
+<?php
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\{{authentication_class_name}};
+
+class TokenController extends Controller
+{
+    public function create (Request $request) {
+        ${{authentication_id_property}} = $request->hasHeader('X-{{authentication_id_property}}') ? $request->header('X-{{authentication_id_property}}') : null;
+        ${{authentication_password_property}} = $request->hasHeader('X-{{authentication_password_property}}') ? $request->header('X-{{authentication_password_property}}') : null;
+        if (is_string(${{authentication_id_property}}) && is_string(${{authentication_password_property}})) {
+            $spiced_{{authentication_password_property}} = hash('sha256', self::spice(${{authentication_password_property}}));
+            try {
+                ${{authentication_name}} = {{authentication_class_name}}::where(
+                    [
+                        '{{authentication_id_property}}' => ${{authentication_id_property}},
+                        '{{authentication_password_property}}' => $spiced_{{authentication_password_property}}
+                    ])->firstOrFail();
+                $timestamp = date('Y-m-d H:i:s');
+                ${{authentication_name}}->expires = $timestamp;
+                ${{authentication_name}}->token = hash('sha256', $spiced_{{authentication_password_property}} . $timestamp);
+                ${{authentication_name}}->save();
+                $value = [
+                    'data' => [
+                        'id' => ${{authentication_name}}->id,
+                        'token' => ${{authentication_name}}->token,
+                        'expires' => ${{authentication_name}}->expires
+                    ],
+                    'relationships' => [
+                        '{{authentication_name}}' => [
+                            'data' => [
+                                'id' => ${{authentication_name}}->id,
+                                'name' => ${{authentication_name}}->name,
+                                '{{authentication_id_property}}' => ${{authentication_name}}->{{authentication_id_property}},
+                            ]
+                        ]
+                    ]
+                ];
+                return response()->json($value, 201);
+
+            } catch (ModelNotFoundException $e) {
+                abort(404, 'No {{authentication_name}} using ' . ${{authentication_id_property}} . ' found');
+            }
+        } else {
+            throw abort(401, 'No credentials have been sent');
+        }
+    }
+
+    //
+}
