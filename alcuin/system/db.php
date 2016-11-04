@@ -426,6 +426,73 @@
             }
         }
     }
+
+    function associate_authentication_authorization ($configuration, $connection) {
+        $authentication_name = $configuration->architecture->use_for_auth;
+        $authorization_name = $configuration->architecture->use_for_permimission;
+        $authentication_model = $configuration->architecture->models->{$authentication_name};
+        $authorization_model = $configuration->architecture->models->{$authorization_name};
+        $authentication_table_name = get_model_plural_name($authentication_name, $authentification_model);
+        $authorization_table_name = get_model_plural_name($authorization_name, $authorization_model);
+        $assignments = $configuration->architecture->models->{$authentication_name}->assign_to_after_creation;
+
+        $authentification_id_property = null;
+        foreach ($authentification_model->properties as $property_name => $property) {
+            if ($property->use_as_id) {
+                $authentification_id_property = $property_name;
+                break;
+            }
+        }
+
+        $authorization_id_property = null;
+        foreach ($authorization_model->properties as $property_name => $property) {
+            if ($property->use_as_id) {
+                $authorization_id_property = $property_name;
+                break;
+            }
+        }
+
+        $relation_name = null;
+        $relation_type = null;
+        $via_table = null;
+        foreach ($authentification->relations as $_name => $relation) {
+            if ($relation->model === $authentication_name) {
+                $relation_name = $name;
+                $relation_type = $relation->type;
+                $via_table = $relation->via_table ? : null;
+                break;
+            }
+        }
+        $prepared_query = null;
+
+        $get_authentication_ids_query = 'SELECT id FROM `' . $configuration->db->name'`';
+
+        $values = array_map(function ($value) {
+            return '"' . $value . '"';
+        }, $assignments);
+        $get_authorization_ids_query = 'SELECT id FROM `' . $configuration->db->name'`.`' . $authorization_table_name .
+                '` WHERE `' . $authorization_id_property . '` IN (' . implode(',', $values) . ');';
+        $result = $connection->query($get_authorization_ids_query);
+        switch ($relation_type) {
+            case BELONGS_TO:
+                // all authorization models (roles) might be assigned to one authentication model (user) ? This does not seem to be sensible
+                break;
+            case HAS_MANY: 
+                // on creations of the authentication model (user) we are have specified the corresponding authorization model already
+                break;
+            case BELONGS_TO_AND_HAS_MANY:
+                $pairs = [];
+                foreach ($assignments as $assignment) {
+                    array_push();
+                }
+                $prepared_query = 'INSERT INTO `' . $connection->db->name . '`.`' . $via_table .  '` (`' . $authentication_name . '_id`, `' . $authorization_name . '_id`)
+                    VALUES (
+                        ,
+                        ()
+                    );';
+                break;
+        }
+    }
         
     /* returns an active database connection */
     function connect_db ($configuration) {

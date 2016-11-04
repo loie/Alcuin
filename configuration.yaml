@@ -143,6 +143,8 @@ architecture:
             instances:
                 - email: nobody@example.com
                   name: Lorenz Merdian
+            assign_to_after_creation:
+                - user
         tag:
             name_plural: tags
             permissions:
