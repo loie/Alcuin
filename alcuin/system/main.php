@@ -93,6 +93,10 @@ function alcuin ($file) {
                     'func' => 'create_instances'
                 ),
                 array(
+                    'description' => 'Associating authentication instances with authorization instances',
+                    'func' => 'associate_authentication_authorization'
+                ),
+                array(
                     'description' => 'Installing Lumen',
                     'func' => 'install_lumen'
                 ),

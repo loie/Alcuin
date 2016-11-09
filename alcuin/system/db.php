@@ -429,15 +429,15 @@
 
     function associate_authentication_authorization ($configuration, $connection) {
         $authentication_name = $configuration->architecture->use_for_auth;
-        $authorization_name = $configuration->architecture->use_for_permimission;
+        $authorization_name = $configuration->architecture->use_for_permission;
         $authentication_model = $configuration->architecture->models->{$authentication_name};
         $authorization_model = $configuration->architecture->models->{$authorization_name};
         $authentication_table_name = get_model_plural_name($authentication_name, $authentification_model);
         $authorization_table_name = get_model_plural_name($authorization_name, $authorization_model);
-        $assignments = $configuration->architecture->models->{$authentication_name}->assign_to_after_creation;
+
 
         $authentification_id_property = null;
-        foreach ($authentification_model->properties as $property_name => $property) {
+        foreach ($authentication_model->properties->list as $property_name => $property) {
             if ($property->use_as_id) {
                 $authentification_id_property = $property_name;
                 break;
@@ -445,34 +445,63 @@
         }
 
         $authorization_id_property = null;
-        foreach ($authorization_model->properties as $property_name => $property) {
+        foreach ($authorization_model->properties->list as $property_name => $property) {
             if ($property->use_as_id) {
                 $authorization_id_property = $property_name;
                 break;
             }
         }
 
+        // get 'names' of 'roles'
+        $assignments = $configuration->architecture->models->{$authentication_name}->assign_to_after_creation;
+        
+        // get 'emais' of 'users'
+        $instances_names = [];
+        foreach($authentication_model->instances as $instance) {
+            array_push($instances_names, $instance->{$authentification_id_property});
+        }
+
         $relation_name = null;
         $relation_type = null;
         $via_table = null;
-        foreach ($authentification->relations as $_name => $relation) {
-            if ($relation->model === $authentication_name) {
+        foreach ($authentication_model->relations as $_name => $relation) {
+            if ($relation->model === $authorization_name) {
                 $relation_name = $name;
                 $relation_type = $relation->type;
                 $via_table = $relation->via_table ? : null;
                 break;
             }
         }
-        $prepared_query = null;
-
-        $get_authentication_ids_query = 'SELECT id FROM `' . $configuration->db->name'`';
+        $query = null;
+        $values = array_map(function ($value) {
+            return '"' . $value . '"';
+        }, $instances_names);
+        $get_authentication_ids_query = 'SELECT id FROM `' . $configuration->db->name . '`.`'. $authentication_table_name .
+            '` WHERE ' . $authentification_id_property . ' IN (' . implode(',', $values) . ')';
+        $results = $connection->query($get_authentication_ids_query);
+        $authentication_ids = [];
+        foreach ($results as $result) {
+            array_push($authentication_ids, $result['id']);
+        }
 
         $values = array_map(function ($value) {
             return '"' . $value . '"';
         }, $assignments);
-        $get_authorization_ids_query = 'SELECT id FROM `' . $configuration->db->name'`.`' . $authorization_table_name .
+        $get_authorization_ids_query = 'SELECT id FROM `' . $configuration->db->name . '`.`' . $authorization_table_name .
                 '` WHERE `' . $authorization_id_property . '` IN (' . implode(',', $values) . ');';
-        $result = $connection->query($get_authorization_ids_query);
+        $results = $connection->query($get_authorization_ids_query);
+        $authorization_ids = [];
+        foreach ($results as $result) {
+            array_push($authorization_ids, $result['id']);
+        }
+        $relations_a_a = [];
+        foreach ($authentication_ids as $authentication_id) {
+            foreach ($authorization_ids as $authorization_id) {
+                $rel = '('. $authentication_id . ', ' . $authorization_id . ')';
+                array_push($relations_a_a, $rel);
+            }
+        }
+
         switch ($relation_type) {
             case BELONGS_TO:
                 // all authorization models (roles) might be assigned to one authentication model (user) ? This does not seem to be sensible
@@ -481,17 +510,16 @@
                 // on creations of the authentication model (user) we are have specified the corresponding authorization model already
                 break;
             case BELONGS_TO_AND_HAS_MANY:
-                $pairs = [];
-                foreach ($assignments as $assignment) {
-                    array_push();
-                }
-                $prepared_query = 'INSERT INTO `' . $connection->db->name . '`.`' . $via_table .  '` (`' . $authentication_name . '_id`, `' . $authorization_name . '_id`)
-                    VALUES (
-                        ,
-                        ()
-                    );';
+                $query = 'INSERT INTO `' . $configuration->db->name . '`.`' . $via_table .  '` (`' . $authentication_name . '_id`, `' . $authorization_name . '_id`)
+                    VALUES ' . implode(',', $relations_a_a) . ';';
                 break;
         }
+        if ($query !== null) {
+            // echo $query;
+            $connection->exec($query);
+            success();
+        }
+
     }
         
     /* returns an active database connection */

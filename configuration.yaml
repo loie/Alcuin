@@ -143,7 +143,10 @@ architecture:
             instances:
                 - email: nobody@example.com
                   name: Lorenz Merdian
+                - email: nobody@heise.de
+                  name: Nobody Is There
             assign_to_after_creation:
+                - admin
                 - user
         tag:
             name_plural: tags
