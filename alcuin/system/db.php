@@ -503,27 +503,24 @@
                     array_push($relations_a_a, $rel);
                 }
             }
+            switch ($relation_type) {
+                case BELONGS_TO:
+                    // all authorization models (roles) might be assigned to one authentication model (user) ? This does not seem to be sensible
+                    break;
+                case HAS_MANY: 
+                    // on creations of the authentication model (user) we are have specified the corresponding authorization model already
+                    break;
+                case BELONGS_TO_AND_HAS_MANY:
+                    $query = 'INSERT INTO `' . $configuration->db->name . '`.`' . $via_table .  '` (`' . $authentication_name . '_id`, `' . $authorization_name . '_id`)
+                        VALUES ' . implode(',', $relations_a_a) . ';';
+                    break;
+            }
+            if ($query !== null) {
+                // echo $query;
+                $connection->exec($query);
+                success();
+            }
         }
-
-
-        switch ($relation_type) {
-            case BELONGS_TO:
-                // all authorization models (roles) might be assigned to one authentication model (user) ? This does not seem to be sensible
-                break;
-            case HAS_MANY: 
-                // on creations of the authentication model (user) we are have specified the corresponding authorization model already
-                break;
-            case BELONGS_TO_AND_HAS_MANY:
-                $query = 'INSERT INTO `' . $configuration->db->name . '`.`' . $via_table .  '` (`' . $authentication_name . '_id`, `' . $authorization_name . '_id`)
-                    VALUES ' . implode(',', $relations_a_a) . ';';
-                break;
-        }
-        if ($query !== null) {
-            // echo $query;
-            $connection->exec($query);
-            success();
-        }
-
     }
         
     /* returns an active database connection */
