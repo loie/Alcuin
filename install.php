@@ -14,4 +14,5 @@ echo '<!DOCTYPE html>
 
 alcuin($config_file);
 echo '</body>';
+
 ?>

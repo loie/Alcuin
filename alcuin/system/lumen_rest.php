@@ -22,7 +22,7 @@
             'class_name' => ucfirst($name),
             'model' => $configuration->architecture->models->{$name},
             'id_property' => $id_property,
-            'password_property' => $password_property
+            'password_property' => $password_property,
         ];
         // echo '<pre>';
         // print_r($result);
@@ -64,7 +64,6 @@
             'authentification_uc' => $authentication['class_name']
         ]);
         success();
-
     }
 
     function create_lumen_middleware ($configuration) {
@@ -287,7 +286,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
                 $relationships[$relation->type][$relation_name] = [
                     'type' => $relation->model
                 ];
-                $relationship_permissions[$relation_name] = $relation->permissions;
+                $relationship_permissions[$relation_name] = (array) $relation->permissions;
                 switch ($relation->type) {
                     case BELONGS_TO:
                         array_push($belongs_to_desc, [
@@ -443,10 +442,11 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
             ];
 
             if ($model_name === $authentication['name']) {
-                $replacements['authentication_usages'] = 'use Illuminate\Http\Request;
+                $replacements['authentication_usages'] = "use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use App\User;
-';
+use App\\" . $authentication['class_name'] . ";
+use App\\" . ucfirst($authorization_name) . ";
+";
                 $replacements['authentication_method_override'] = '
     public function create (Request $request) {
         $' . $authentication['id_property']. ' = $request->has(\'' . $authentication['id_property']. '\') ? $request->input(\'' . $authentication['id_property']. '\') : null;
@@ -466,10 +466,17 @@ use App\User;
             return response()->json($value, 422);
         }
 
-        $user = new User;
+        $user = new ' . $authentication['class_name'] . ';
         $this->save_model($request, $user);
         $user->' . $authentication['id_property']. ' = $' . $authentication['id_property']. ';
         $user->' . $authentication['password_property'] . ' = hash(\'sha256\', self::spice($' . $authentication['password_property'] . '));
+
+
+        $' . $authorization_name . '_ids = [];
+        foreach (' . ucfirst($authorization_name) . '::whereIn(\'' . $authorization_id_name . '\', ' . array_to_string($authentication['model']->assign_to_after_creation) . ')->cursor() as $' . $authorization_name . ') {
+            array_push($' . $authorization_name . '_ids, $' . $authorization_name . '->id);
+        }
+        $user->' . $a_a_relation_name . '()->attach($' . $authorization_name . '_ids);
         $user->save();
 
         $value = [
@@ -552,7 +559,6 @@ use App\User;
             success();    
         }
     }
-
 
     function create_lumen_observers ($configuration) {
         next_item('Creating Model Observer');

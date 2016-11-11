@@ -1,4 +1,5 @@
 <?php
+    require 'autoload.php';
 
     const BELONGS_TO = 'belongs_to';
     const HAS_MANY = 'has_many';
@@ -15,10 +16,21 @@
         return null;
     }
 
-    function array_to_string ($arr) {
+    function array_to_string ($arr, $base = 0) {
         $output = json_decode(str_replace(array('(',')'), array('&#40','&#41'), json_encode($arr)), true);
-        $output = var_export($output, true);
-        $output = str_replace(array('array (',')','&#40','&#41'), array('[',']','(',')'), $output);
+        $encoder = new \Riimu\Kit\PHPEncoder\PHPEncoder();
+        $output = $encoder->encode($arr, [
+            'array.base' => 0,
+            'array.short' => true,
+            'array.inline' => false,
+            'array.omit' => true,
+            'array.indent' => 4,
+            'boolean.capitalize' => false,
+            'null.capitalize' => false,
+            'string.escape' => false,
+            'object.format' => 'export'
+        ]);
+        // $output = str_replace(array('array (',')','&#40','&#41'), array('[',']','(',')'), $output);
         return $output;
     }
 
