@@ -457,8 +457,10 @@
         
         // get 'emais' of 'users'
         $instances_names = [];
-        foreach($authentication_model->instances as $instance) {
-            array_push($instances_names, $instance->{$authentification_id_property});
+        if ($authentification_model->instances) {
+            foreach($authentication_model->instances as $instance) {
+                array_push($instances_names, $instance->{$authentification_id_property});
+            }
         }
 
         $relation_name = null;
@@ -473,15 +475,17 @@
             }
         }
         $query = null;
-        $values = array_map(function ($value) {
-            return '"' . $value . '"';
-        }, $instances_names);
-        $get_authentication_ids_query = 'SELECT id FROM `' . $configuration->db->name . '`.`'. $authentication_table_name .
-            '` WHERE ' . $authentification_id_property . ' IN (' . implode(',', $values) . ')';
-        $results = $connection->query($get_authentication_ids_query);
-        $authentication_ids = [];
-        foreach ($results as $result) {
-            array_push($authentication_ids, $result['id']);
+        if (count($instances_names) > 0) {
+            $values = array_map(function ($value) {
+                return '"' . $value . '"';
+            }, $instances_names);
+            $get_authentication_ids_query = 'SELECT id FROM `' . $configuration->db->name . '`.`'. $authentication_table_name .
+                '` WHERE ' . $authentification_id_property . ' IN (' . implode(',', $values) . ')';
+            $results = $connection->query($get_authentication_ids_query);
+            $authentication_ids = [];
+            foreach ($results as $result) {
+                array_push($authentication_ids, $result['id']);
+            }
         }
 
         $values = array_map(function ($value) {
