@@ -486,25 +486,25 @@
             foreach ($results as $result) {
                 array_push($authentication_ids, $result['id']);
             }
-        }
-
-        $values = array_map(function ($value) {
-            return '"' . $value . '"';
-        }, $assignments);
-        $get_authorization_ids_query = 'SELECT id FROM `' . $configuration->db->name . '`.`' . $authorization_table_name .
-                '` WHERE `' . $authorization_id_property . '` IN (' . implode(',', $values) . ');';
-        $results = $connection->query($get_authorization_ids_query);
-        $authorization_ids = [];
-        foreach ($results as $result) {
-            array_push($authorization_ids, $result['id']);
-        }
-        $relations_a_a = [];
-        foreach ($authentication_ids as $authentication_id) {
-            foreach ($authorization_ids as $authorization_id) {
-                $rel = '('. $authentication_id . ', ' . $authorization_id . ')';
-                array_push($relations_a_a, $rel);
+            $values = array_map(function ($value) {
+                return '"' . $value . '"';
+            }, $assignments);
+            $get_authorization_ids_query = 'SELECT id FROM `' . $configuration->db->name . '`.`' . $authorization_table_name .
+                    '` WHERE `' . $authorization_id_property . '` IN (' . implode(',', $values) . ');';
+            $results = $connection->query($get_authorization_ids_query);
+            $authorization_ids = [];
+            foreach ($results as $result) {
+                array_push($authorization_ids, $result['id']);
+            }
+            $relations_a_a = [];
+            foreach ($authentication_ids as $authentication_id) {
+                foreach ($authorization_ids as $authorization_id) {
+                    $rel = '('. $authentication_id . ', ' . $authorization_id . ')';
+                    array_push($relations_a_a, $rel);
+                }
             }
         }
+
 
         switch ($relation_type) {
             case BELONGS_TO:
