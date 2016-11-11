@@ -35,7 +35,7 @@
         next_item('Creating app file');
         $config = ['names' => ['path' => [], 'class' => [], 'plural' => []]];
         foreach ($configuration->architecture->models as $model_name => $model) {
-            $config['names']['path'][$model_name] = '/' . $model->name_plural;
+            $config['names']['path'][$model_name] = '/' . get_model_plural_name($model_name, $model);
             $config['names']['plural'][$model_name] = get_model_plural_name($model_name, $model);
             $config['names']['class'][$model_name] = ucfirst($model_name);
 
