@@ -1,13 +1,13 @@
 # Alcuin
-####REST API for the rest of us
+#### REST API for the rest of us
 
 Alcuin creates the database schema and the corresponding PHP classes to provide a fully working REST API for you.
 All it needs, is a YAML configuration file and a working PHP environment with composer and a MySQL database.
 
-###What can Alcuin do fo you?
+### What can Alcuin do fo you?
 You want a REST API? You don't like thinking about foreign key constraints in your DB? You want an easy way to create a full-grown REST APi, but not worrying about the hassle? Try Alcuin!
 
-###How to Start
+### How to Start
 
 There are only a few simple steps to take:
 
@@ -34,3 +34,6 @@ Since Alcuin the created REST service is based on Laravel, you will need compose
 ##### Update
 ##### Delete
 #### Relations
+
+## To Do
+* Handle instances for user
