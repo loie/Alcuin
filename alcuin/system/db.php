@@ -560,6 +560,9 @@
                 case 'datetime':
                     $line .= 'DATETIME';
                     $default = "'0000-00-00 00:00:00'";
+                    if ($properties->default == 'now') {
+                        $default = 'CURRENT_TIMESTAMP';
+                    }
                     break;
                 case 'int':
                     $line .= 'INT';
@@ -620,7 +623,7 @@
             }
         }
 
-        // other proerties columns
+        // other properties columns
         if (isset($model->properties) && isset($model->properties->list)) {
             foreach ($model->properties->list as $column_name => $properties) {
                 $column = new stdClass();
