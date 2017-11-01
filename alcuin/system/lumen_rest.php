@@ -58,7 +58,7 @@
 
         next_item('Creating routes');
         $authentication = get_authentication($configuration);
-        copy_with_data('./alcuin/scaffold/config/routes.php.scaffold', './'. $dir_name . '/app/Http/routes.php', [
+        copy_with_data('./alcuin/scaffold/routes/web.php.scaffold', './'. $dir_name . '/routes/web.php', [
             'authentification' => $authentication['name'],
             'authentification_plural' => $authentication['plural'],
             'authentification_uc' => $authentication['class_name']
@@ -68,6 +68,13 @@
 
     function create_lumen_middleware ($configuration) {
         $dir_name = $configuration->web->service_dir;
+
+        next_item('Creating general middleware');
+        copy_with_data(
+            './alcuin/scaffold/middleware/JsonRequestMiddleware.php.scaffold',
+            './'. $dir_name . '/app/Http/Middleware/JsonRequestMiddleware.php', []);
+        success();
+
         next_item('Creating Authentification Middleware');
         copy_with_data(
             './alcuin/scaffold/middleware/Authenticate.php.scaffold',
@@ -452,8 +459,10 @@ use App\\" . ucfirst($authorization_name) . ";
         $' . $authentication['id_property']. ' = $request->has(\'' . $authentication['id_property']. '\') ? $request->input(\'' . $authentication['id_property']. '\') : null;
         $' . $authentication['password_property'] . ' = $request->has(\'' . $authentication['password_property'] . '\') ? $request->input(\'' . $authentication['password_property'] . '\') : null;
         $m = self::MODEL;
+        $validity_rules = $m::VALIDATION($request);
+        $validity_rules[\''. $authentication['password_property'] .'\'] = \'min:1\';
         try {
-            $this->validate($request, $m::VALIDATION($request));
+            $this->validate($request, $validity_rules);
         } catch (ValidationException $e) {
             $details = [];
             foreach ($e->getResponse()->getData() as $key => $message) {

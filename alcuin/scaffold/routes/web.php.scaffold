@@ -1,0 +1,42 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Application Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register all of the routes for an application.
+| It is a breeze. Simply tell Lumen the URIs it should respond to
+| and give it the Closure to call when that URI is requested.
+|
+*/
+
+const ID = '{id}';
+
+function getRouteConfig ($methodName, $name, $middleware = null) {
+    $injection = [];
+    $injection['uses'] =  $name . 'Controller@' . $methodName;
+    if (is_array($middleware) or is_string($middleware)) {
+        $injection['middleware'] = $middleware;
+    }
+    return $injection;
+}
+$router->post('/tokens', getRouteConfig('create', 'Token'));
+$router->post('/{{authentification_plural}}', getRouteConfig('create', config('names.class.{{authentification}}')));
+
+
+foreach (config('names.path') as $id => $path) {
+    // $name = conf('names.path');
+    // $names[$resource];
+    $className = config('names.class.' . $id);
+
+    $middleware = $className === '{{authentification_uc}}' ? ['can'] : ['auth', 'can'];
+    $router->post($path, getRouteConfig('create', $className, $middleware));
+    $router->get($path, getRouteConfig('all', $className, $middleware));
+    $router->get($path . '/' . ID, getRouteConfig('view', $className, $middleware));
+    $router->put($path . '/' . ID, getRouteConfig('update', $className, $middleware));
+    $router->patch($path . '/' . ID, getRouteConfig('patch', $className, $middleware));
+    $router->delete($path . '/' . ID, getRouteConfig('delete', $className, $middleware));
+}
+
+?>
