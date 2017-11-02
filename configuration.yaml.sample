@@ -1,7 +1,7 @@
 ---
 drop_old_db: true
 db:
-    host: localhost
+    host: 127.0.0.1
     port: 3306
     name: test
     user: root
@@ -140,11 +140,6 @@ architecture:
                             - admin
                         delete:
                             - none
-            instances:
-                - email: nobody@example.com
-                  name: Lorenz Merdian
-                - email: nobody@heise.de
-                  name: Nobody Is There
             assign_to_after_creation:
                 - admin
                 - user

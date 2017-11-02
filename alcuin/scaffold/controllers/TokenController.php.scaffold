@@ -1,11 +1,14 @@
 <?php
 namespace App\Http\Controllers;
 
+use DateTime;
 use Illuminate\Http\Request;
 use App\{{authentication_class_name}};
 
 class TokenController extends Controller
 {
+    use RestActions;
+    
     public function create (Request $request) {
         ${{authentication_id_property}} = $request->hasHeader('X-{{authentication_id_property}}') ? $request->header('X-{{authentication_id_property}}') : null;
         ${{authentication_password_property}} = $request->hasHeader('X-{{authentication_password_property}}') ? $request->header('X-{{authentication_password_property}}') : null;
@@ -17,7 +20,8 @@ class TokenController extends Controller
                         '{{authentication_id_property}}' => ${{authentication_id_property}},
                         '{{authentication_password_property}}' => $spiced_{{authentication_password_property}}
                     ])->firstOrFail();
-                $timestamp = date('Y-m-d H:i:s');
+                $date = new DateTime('+1 hour');
+                $timestamp = $date->format("Y-m-d H:i:s");
                 ${{authentication_name}}->expires = $timestamp;
                 ${{authentication_name}}->token = hash('sha256', $spiced_{{authentication_password_property}} . $timestamp);
                 ${{authentication_name}}->save();
@@ -47,5 +51,17 @@ class TokenController extends Controller
         }
     }
 
-    //
+    public function delete (Request $request, $id) {
+        ${{authentication_id_property}} = $request->hasHeader('X-{{authentication_id_property}}') ? $request->header('X-{{authentication_id_property}}') : null;
+        $token = $request->hasHeader('X-token') ? $request->header('X-token') : null;
+        ${{authentication_name}} = {{authentication_class_name}}::where(
+            [
+                'id' => $id,
+                '{{authentication_id_property}}' => ${{authentication_id_property}},
+                'token' => $token
+            ])->firstOrFail();
+        ${{authentication_name}}->token = null;
+        ${{authentication_name}}->save();
+        return $this->respond('removed');
+    }
 }
