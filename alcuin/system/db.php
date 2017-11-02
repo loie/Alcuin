@@ -618,7 +618,6 @@
                     $column = new stdClass();
                     $column->name = $relation_name . '_id';
                     $column->statement = '`' . $column->name . '` INT';
-                    var_dump($relation->required);
                     if (isset($relation->required) && $relation->required == false) {
                         $column->statement .= ' NULL';
                     } else {
