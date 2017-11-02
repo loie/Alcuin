@@ -617,7 +617,13 @@
                 if ($relation->type === BELONGS_TO) {
                     $column = new stdClass();
                     $column->name = $relation_name . '_id';
-                    $column->statement = '`' . $column->name . '` INT NOT NULL';
+                    $column->statement = '`' . $column->name . '` INT';
+                    var_dump($relation->required);
+                    if (isset($relation->required) && $relation->required == false) {
+                        $column->statement .= ' NULL';
+                    } else {
+                        $column->statement .= ' NOT NULL';
+                    }
                     array_push($columns, $column);
                 }
             }
