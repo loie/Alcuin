@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\{{authentication_class_name}};
 
 class TokenController extends Controller
@@ -19,7 +20,10 @@ class TokenController extends Controller
                     [
                         '{{authentication_id_property}}' => ${{authentication_id_property}},
                         '{{authentication_password_property}}' => $spiced_{{authentication_password_property}}
-                    ])->firstOrFail();
+                    ])->first();
+                if (${{authentication_name}} == null) {
+                    throw new ModelNotFoundException();
+                }
                 $date = new DateTime('+1 hour');
                 $timestamp = $date->format("Y-m-d H:i:s");
                 ${{authentication_name}}->expires = $timestamp;
@@ -28,15 +32,35 @@ class TokenController extends Controller
                 $value = [
                     'data' => [
                         'id' => ${{authentication_name}}->id,
-                        'token' => ${{authentication_name}}->token,
-                        'expires' => ${{authentication_name}}->expires
+                        'attributes' => [
+                            'token' => ${{authentication_name}}->token,
+                            'expires' => ${{authentication_name}}->expires
+                        ],
+                        'links' => [
+                            'self' => $request->root() . '/tokens/' . ${{authentication_name}}->id
+                        ],
+                        'relationships' => [
+                            '{{authentication_name}}' => [
+                                'data' => [
+                                    'id' => ${{authentication_name}}->id,
+                                    'type' => '{{authentication_name}}',
+                                    'links' => [
+                                        'self' => $request->root() . '/{{authentication_plural_name}}/' . ${{authentication_name}}->id
+                                    ]
+                                ]
+                            ]
+                        ]
                     ],
-                    'relationships' => [
-                        '{{authentication_name}}' => [
-                            'data' => [
-                                'id' => ${{authentication_name}}->id,
+                    'included' => [
+                        [
+                            'id' => ${{authentication_name}}->id,
+                            'type' => '{{authentication_name}}',
+                            'attributes' => [
                                 'name' => ${{authentication_name}}->name,
                                 '{{authentication_id_property}}' => ${{authentication_name}}->{{authentication_id_property}},
+                            ],
+                            'links' => [
+                                'self' => $request->root() . '/{{authentication_plural_name}}/' . ${{authentication_name}}->id
                             ]
                         ]
                     ]
@@ -44,11 +68,30 @@ class TokenController extends Controller
                 return response()->json($value, 201);
 
             } catch (ModelNotFoundException $e) {
-                abort(404, 'No {{authentication_name}} using ' . ${{authentication_id_property}} . ' found');
+                abort(404, 'Token could not be found for this email and password');
             }
         } else {
             throw abort(401, 'No credentials have been sent');
         }
+    }
+
+    public function view (Request $request, $id) {
+        ${{authentication_id_property}} = $request->hasHeader('X-{{authentication_id_property}}') ? $request->header('X-{{authentication_id_property}}') : null;
+        $token = $request->hasHeader('X-token') ? $request->header('X-token') : null;
+        ${{authentication_name}} = {{authentication_class_name}}::where(
+            [
+                'id' => $id,
+                '{{authentication_id_property}}' => ${{authentication_id_property}},
+                'token' => $token
+            ])->firstOrFail();
+        $token = [
+            "data" => [
+                'id' => ${{authentication_name}}->id,
+                'token' => ${{authentication_name}}->token,
+                'expires' => ${{authentication_name}}->expires
+            ],
+        ];
+        return $this->respond('done', $token);
     }
 
     public function delete (Request $request, $id) {

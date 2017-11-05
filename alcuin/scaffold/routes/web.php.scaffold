@@ -22,6 +22,7 @@ function getRouteConfig ($methodName, $name, $middleware = null) {
     return $injection;
 }
 $router->post('/tokens', getRouteConfig('create', 'Token'));
+$router->get('/tokens/' . ID, getRouteConfig('view', 'Token'));
 $router->delete('/tokens/' . ID, getRouteConfig('delete', 'Token'));
 $router->post('/{{authentification_plural}}', getRouteConfig('create', config('names.class.{{authentification}}')));
 

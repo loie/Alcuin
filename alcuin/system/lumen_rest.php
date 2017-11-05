@@ -432,14 +432,14 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
                 'authentication_class_name' => $authentication['class_name'],
                 'authentication_id_property' => $authentication['id_property'],
                 'authentication_password_property' => $authentication['password_property'],
-                'authentication_name' => $authentication['name']
+                'authentication_name' => $authentication['name'],
+                'authentication_plural_name' => $authentication['plural']
             ]);
         success();
 
 
         foreach ($configuration->architecture->models as $model_name => $model) {
             next_item('Creating Controller for <code>' . $model_name . '</code>');
-
 
             $replacements = [
                 'authentication_usages' => '',
@@ -466,7 +466,7 @@ use App\\" . ucfirst($authorization_name) . ";
         } catch (ValidationException $e) {
             $details = [];
             foreach ($e->getResponse()->getData() as $key => $message) {
-                array_push($details, $message);
+                array_push($details, $message[0]);
             }
             $value = [
                 \'error\' => \'The data was not correct\',
@@ -491,15 +491,13 @@ use App\\" . ucfirst($authorization_name) . ";
         $value = [
             \'data\' => [
                 \'id\' => $user->id,
-                \'' . $authentication['id_property']. '\' => $user->' . $authentication['id_property'] . ',
-            ],
-            \'links\' => [
-                \'self\' => $request->fullUrl() . \'/\' . $user->id
-            ],
-            \'relationships\' => [
-                \'token\' => [
+                \'attributes\' => [
+                    \'' . $authentication['id_property']. '\' => $user->' . $authentication['id_property'] . ',
+                ],
+                \'links\' => [
+                    \'self\' => $request->fullUrl() . \'/\' . $user->id
                 ]
-            ]
+            ],
         ];
         return response()->json($value, 201);
     }';
