@@ -231,15 +231,13 @@ trait RESTActions {
         $relation_item = [];
 
         $link = $request->root() . config('names.path.' . $description['type']). '/' . $relation->id;
+
+        $relation_item['id'] = $relation->id;
+        $relation_item['type'] = $description['type'];
         $relation_item['links'] = [
             'self' => $link
         ];
         $this->set_visible_properties($request, $relation);
-        $relation_item['attributes'] = [
-            'id' => $relation->id,
-            'type' => $description['type'],
-            'attributes' => $relation
-        ];
 
         $inclusion_item = [];
         $inclusion_item['type'] = $description['type'];
