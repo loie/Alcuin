@@ -3,6 +3,7 @@
 use App\{{authentication_class_name}};
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
@@ -463,6 +464,7 @@ trait RESTActions {
         }
         try {
             $validation = $m::VALIDATION($request, $model);
+            {{update_validation_override}}
             if (!$fullOverwrite) { // just check the given properties
                 $editable_properties = $this->get_actionable_properties($request, $model, 'update');
                 $validation_properties = array_intersect($m::$PROPERTIES, $editable_properties, array_keys($request->input()));

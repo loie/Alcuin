@@ -445,10 +445,12 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
                 'authentication_usages' => '',
                 'authentication_method_override' => '',
                 'class_name' =>  ucfirst($model_name),
-                'name' => $model_name
+                'name' => $model_name,
+                'update_validation_override' => ''
             ];
 
             if ($model_name === $authentication['name']) {
+                $replacements['update_validation_override'] = '$validation[\'' . $authentication['password_property'] . '\'] = \'min:1\';';
                 $replacements['authentication_usages'] = "use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use App\\" . $authentication['class_name'] . ";
@@ -475,27 +477,27 @@ use App\\" . ucfirst($authorization_name) . ";
             return response()->json($value, 422);
         }
 
-        $user = new ' . $authentication['class_name'] . ';
-        $this->save_model($request, $user);
-        $user->' . $authentication['id_property']. ' = $' . $authentication['id_property']. ';
-        $user->' . $authentication['password_property'] . ' = hash(\'sha256\', self::spice($' . $authentication['password_property'] . '));
+        $' . $authentication['name'] .' = new ' . $authentication['class_name'] . ';
+        $this->save_model($request, $' . $authentication['name'] .');
+        $' . $authentication['name'] .'->' . $authentication['id_property']. ' = $' . $authentication['id_property']. ';
+        $' . $authentication['name'] .'->' . $authentication['password_property'] . ' = hash(\'sha256\', self::spice($' . $authentication['password_property'] . '));
 
 
         $' . $authorization_name . '_ids = [];
         foreach (' . ucfirst($authorization_name) . '::whereIn(\'' . $authorization_id_name . '\', ' . array_to_string($authentication['model']->assign_to_after_creation) . ')->cursor() as $' . $authorization_name . ') {
             array_push($' . $authorization_name . '_ids, $' . $authorization_name . '->id);
         }
-        $user->' . $a_a_relation_name . '()->attach($' . $authorization_name . '_ids);
-        $user->save();
+        $' . $authentication['name'] .'->' . $a_a_relation_name . '()->attach($' . $authorization_name . '_ids);
+        $' . $authentication['name'] .'->save();
 
         $value = [
             \'data\' => [
-                \'id\' => $user->id,
+                \'id\' => $' . $authentication['name'] .'->id,
                 \'attributes\' => [
-                    \'' . $authentication['id_property']. '\' => $user->' . $authentication['id_property'] . ',
+                    \'' . $authentication['id_property']. '\' => $' . $authentication['name'] .'->' . $authentication['id_property'] . ',
                 ],
                 \'links\' => [
-                    \'self\' => $request->fullUrl() . \'/\' . $user->id
+                    \'self\' => $request->fullUrl() . \'/\' . $' . $authentication['name'] .'->id
                 ]
             ],
         ];
