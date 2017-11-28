@@ -8,26 +8,63 @@ use Illuminate\Database\Eloquent\Model;
 
 class {{class_name}} extends Model {{implements}}{
     {{inner_usages}}
+
     const TYPE = '{{type}}';
 
     public $timestamps = false;
     protected $hidden = {{hidden}};
 
-    public static function VALIDATION (Request $request, $model = null) {
+    private static $_singleton;
+
+    public function __construct() {
+    }
+
+    public static function getSingleton() {
+        if (self::$_singleton === null) {
+            self::$_singleton = new {{class_name}}();
+        }
+        return self::$_singleton;
+    }
+
+    public function VALIDATION (Request $request, $model = null) {
         $validation = {{validation}};
         {{validation_authentication}}
         return $validation;
     }
 
-    public static $PROPERTIES = {{properties}};
+    public $PROPERTIES = {{properties}};
 
-    public static $PROPERTIES_PERMISSIONS = {{property_permissions}};
+    public $PROPERTIES_PERMISSIONS = {{property_permissions}};
 
-    public static $RELATIONSHIPS = {{relationships}};
+    public $RELATIONSHIPS = {{relationships}};
 
-    public static $RELATIONSHIP_PERMISSIONS = {{relationship_permissions}};
+    public $RELATIONSHIP_PERMISSIONS = {{relationship_permissions}};
 
     {{belongs_to_functions}}
     {{has_many_functions}}
     {{belongs_to_and_has_many_functions}}
+
+    public function GET_UPDATE_VALIDATION_OVERRIDES() {
+        return {{update_validation_overrides}};
+    }
+
+    public function GET_UPDATE_VALUE_OVERRIDES() {
+        return {{update_value_overrides}};
+    }
+
+    protected static $SALT = {{salt}};
+    const PEPPER = '{{pepper}}';
+
+    protected static function spice ($string) {
+        $i = 0;
+        $stringLength = strlen($string);
+        $spiced = $string;
+        foreach (self::$SALT as $index) {
+            if ($index < $stringLength) {
+                $spiced .= substr($string, $index, 1);
+            }
+        }
+        $spiced = self::PEPPER . $spiced . self::PEPPER;
+        return $spiced;
+    }
 }

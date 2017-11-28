@@ -182,6 +182,9 @@ use App\\Observers\\{{class_name}}Observer;
             $usages = '';
             $implements = '';
             $inner_usages = '';
+
+            $update_validation_overrides = [];
+            $update_value_overrides = [];
             if ($model_name === $authentication['name']) {
                 $usages = '
 use Illuminate\Auth\Authenticatable;
@@ -191,6 +194,8 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 ';
                 $implements = 'implements AuthenticatableContract, AuthorizableContract';
                 $inner_usages = 'use Authenticatable, Authorizable;';
+                $update_validation_overrides = ['password' => 'min:1'];
+                $update_value_overrides = '[\'password\' => function ($password = \'\') { return hash(\'sha256\', self::spice($password));}]';
             }
 
             $hidden = ['pivot'];
@@ -350,12 +355,17 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
                 'hidden' => $hidden,
                 'validation' => $validation,
                 'validation_authentication' => $validation_authentication,
+                'update_validation_overrides' => $update_validation_overrides,
+                'update_value_overrides' => $update_value_overrides,
                 'properties' => $properties,
                 'property_permissions' => $property_permissions,
                 'relationships' => $relationships,
                 'relationship_permissions' => $relationship_permissions,
                 'has_many_functions' => $has_many_functions,
                 'belongs_to_and_has_many_functions' => $belongs_to_and_has_many_functions,
+                'salt' => $configuration->salt,
+                'pepper' => $configuration->pepper
+
             ];
             if (empty($belongs_to_desc)) {
                 $replacement_description['belongs_to_functions'] = '';
@@ -446,11 +456,9 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
                 'authentication_method_override' => '',
                 'class_name' =>  ucfirst($model_name),
                 'name' => $model_name,
-                'update_validation_override' => ''
             ];
 
             if ($model_name === $authentication['name']) {
-                $replacements['update_validation_override'] = '$validation[\'' . $authentication['password_property'] . '\'] = \'min:1\';';
                 $replacements['authentication_usages'] = "use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use App\\" . $authentication['class_name'] . ";
@@ -461,7 +469,7 @@ use App\\" . ucfirst($authorization_name) . ";
         $' . $authentication['id_property']. ' = $request->has(\'' . $authentication['id_property']. '\') ? $request->input(\'' . $authentication['id_property']. '\') : null;
         $' . $authentication['password_property'] . ' = $request->has(\'' . $authentication['password_property'] . '\') ? $request->input(\'' . $authentication['password_property'] . '\') : null;
         $m = self::MODEL;
-        $validity_rules = $m::VALIDATION($request);
+        $validity_rules = $m::getSingleton()->VALIDATION($request);
         $validity_rules[\''. $authentication['password_property'] .'\'] = \'min:1\';
         try {
             $this->validate($request, $validity_rules);
