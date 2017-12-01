@@ -43,7 +43,6 @@ trait RESTActions {
             $permissions = $m::getSingleton()->PROPERTIES_PERMISSIONS;
             $is_valid = false;
             if (in_array(self::ALL, $permissions[$property][$operation])) {
-
                 $is_valid = true;
             } else if (in_array(self::NONE, $permissions[$property][$operation])) {
                 $is_valid = false;
@@ -90,11 +89,7 @@ trait RESTActions {
     }
 
     protected function set_editable_properties (Request $request, $model) {
-        $func = 'update';
-        if ($request->method() === 'POST') {
-            $func = 'create';
-        }
-        $fillable_properties = $this->get_actionable_properties($request, $model, $func);
+        $fillable_properties = $this->get_actionable_properties($request, $model, 'update');
         $model->fillable($fillable_properties);
         if (count($fillable_properties) === 0) {
             $m = get_class($model);
@@ -132,7 +127,7 @@ trait RESTActions {
             } else {
                 // type self means: the model is associated with the currently logged in {{authentication_name}}
                 $model_type = $model::TYPE;
-                $relationship_types = ${{authentication_name}}::$RELATIONSHIPS;
+                $relationship_types = ${{authentication_name}}::getSingleton()->RELATIONSHIPS;
                 $associated = false;
                 foreach ($relationship_types as $relationship_type) {
                     if ($allowed) {
@@ -253,6 +248,14 @@ trait RESTActions {
 
     private function save_model (Request $request, $model, $fullOverwrite = false) {
         $m = get_class($model);
+
+        // Associate first with current user so that editable can work
+        ${{authentication_name}} = $request->{{authentication_name}}();
+        if (array_key_exists('{{authentication_name}}', $m::getSingleton()->RELATIONSHIPS['belongs_to'])) {
+            if ($this->can_create_relation(${{authentication_name}}, $model, '{{authentication_name}}', ${{authentication_name}})) {
+                $model->{{authentication_name}}()->associate(${{authentication_name}});
+            }
+        }
         $this->set_editable_properties($request, $model);
         if ($fullOverwrite) {
             // reset to null values
@@ -270,12 +273,6 @@ trait RESTActions {
             }
         }
         $model->fill($attributes);
-        ${{authentication_name}} = $request->{{authentication_name}}();
-        if (array_key_exists('{{authentication_name}}', $m::getSingleton()->RELATIONSHIPS['belongs_to'])) {
-            if ($this->can_create_relation(${{authentication_name}}, $model, '{{authentication_name}}', ${{authentication_name}})) {
-                $model->{{authentication_name}}()->associate(${{authentication_name}});
-            }
-        }
         $save_relations = function ($relation_name) use ($model, $request, $fullOverwrite, ${{authentication_name}}) {
             $type = array_search($relation_name, config('names.plural'));
             $className = null;

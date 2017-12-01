@@ -178,7 +178,6 @@ use App\\Observers\\{{class_name}}Observer;
             $plural_name = get_model_plural_name($model_name, $model);
             $authentication = get_authentication($configuration);
 
-
             $usages = '';
             $implements = '';
             $inner_usages = '';
@@ -205,9 +204,8 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
             $validation = [];
             $property_permissions = [];
             $permissions = [];
-            $permissions['create'] = $model->properties->permissions->create ? : [];
-            $permissions['read'] = $model->properties->permissions->read ? : [];
-            $permissions['update'] = $model->properties->permissions->update ? : [];
+            $permissions['read'] = $model->properties->permissions->read ?: [];
+            $permissions['update'] = $model->properties->permissions->update ?: [];
             $property_permissions = [];
 
 
@@ -295,6 +293,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
             $belongs_to_and_has_many_desc = [];
 
             foreach ($model->relations as $relation_name => $relation) {
+                array_push($hidden, $relation_name);
                 $relationships[$relation->type][$relation_name] = [
                     'type' => $relation->model
                 ];
@@ -305,6 +304,7 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
                             'relation_name' => $relation_name,
                             'relation_class_name' => ucfirst($relation->model)
                         ]);
+                        array_push($hidden, $relation_name . '_id');
                         break;
                     case HAS_MANY:
                         array_push($has_many_desc, [
