@@ -126,26 +126,11 @@ trait RESTActions {
                 }
             } else {
                 // type self means: the model is associated with the currently logged in {{authentication_name}}
-                $model_type = $model::TYPE;
-                $relationship_types = ${{authentication_name}}::getSingleton()->RELATIONSHIPS;
-                $associated = false;
-                foreach ($relationship_types as $relationship_type) {
-                    if ($allowed) {
-                        break;
-                    }
-                    foreach ($relationship_type as $name => $description) {
-                        if ($allowed) {
-                            break;
-                        }
-                        if ($description['type'] === $model_type) {
-                            $entities = ${{authentication_name}}->{$name};
-                            foreach ($entities as $entity) {
-                                if ((get_class($entity) === get_class($model)) && ($entity->id === $model->id)) {
-                                    $allowed = true;
-                                    break;
-                                }
-                            }
-                        }
+                if ($model->{{authentication_name}}->id === ${{authentication_name}}->id) {
+                    if ($relation == null || is_numeric($relation)) {
+                        $allowed = true;
+                    } else if ($relation->{{authentication_name}}->id === ${{authentication_name}}->id) {
+                            $allowed = true;
                     }
                 }
             }
@@ -382,10 +367,11 @@ trait RESTActions {
                     }
                     $in_new_but_not_in_old = array_diff($relation_array, $in_both);
                     $sync_in_new_but_not_in_old = [];
+                    $class_name = 'App\\' . config('names.class.' . $model_type);
+
                     foreach ($in_new_but_not_in_old as $new_id) {
-                        if ($this->can_create_relation(${{authentication_name}}, $model, $relation_name, $new_id)) {
-                            $class_name = 'App\\' . config('names.class.' . $model_type);
-                            $instance = $class_name::find($new_id);
+                        $instance = $class_name::find($new_id);
+                        if ($this->can_create_relation(${{authentication_name}}, $model, $relation_name, $instance)) {
                             // cannot delete relation, so keep it
                             array_push($sync_in_new_but_not_in_old, $new_id);
                         }

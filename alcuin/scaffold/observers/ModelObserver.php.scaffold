@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 trait ModelObserver
 {
+    private function delete_tree(Model $model) {
+        $className = get_class($model);
+        $relationships = $className::getSingleton()->RELATIONSHIPS;
+
+        foreach (array_keys($relationships['has_many']) as $relationship) {
+            $children = $model->{$relationship};
+            foreach($children as $child) {
+                $this->delete_tree($child);
+            }
+        }
+        $model->delete();
+    }
     /**
      * Listen to the User deleting event.
      *
@@ -15,12 +27,16 @@ trait ModelObserver
     public function deleting (Model $model)
     {
         $className = get_class($model);
-        $relationships = $className::$RELATIONSHIPS;
-        foreach (array_keys($relationships['has_many']) as $relationship) {
-                $model->{$relationship}()->delete();
-        }
+        $relationships = $className::getSingleton()->RELATIONSHIPS;
         foreach (array_keys($relationships['belongs_to_and_has_many']) as $relationship) {
             $model->{$relationship}()->detach();
+        }
+
+        foreach (array_keys($relationships['has_many']) as $relationship) {
+            $children = $model->{$relationship};
+            foreach($children as $child) {
+                $this->delete_tree($child);
+            }
         }
     }
 }
