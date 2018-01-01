@@ -250,7 +250,7 @@ trait RESTActions {
             }
             $model->fill($attributes);
         }
-        $attributes = $request->input();
+        $attributes = $request->all();
         if ($request->isMethod('put') || $request->isMethod('patch')) {
             $overrides = $m::getSingleton()->GET_UPDATE_VALUE_OVERRIDES();
             foreach ($overrides as $key => $value) {
