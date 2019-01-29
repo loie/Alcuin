@@ -14,7 +14,7 @@ There are only a few simple steps to take:
 1. Download this repostory.
 2. Install composer.
 3. Adapt the `configuration.yaml` to match your settings and wishes
-4. Upload the repository (including the edited `configuration.json`) to your webspace.
+4. Upload the repository (including the edited `configuration.yaml`) to your webspace.
 5. Execute `index.php` on your webspace
 6. Have a beer and enjoy life. You have just setup a fully working REST service. You're awesome!
 
