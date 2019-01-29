@@ -71,7 +71,9 @@
     function get_model_plural_name ($model_name, $model_properties) {
         $model_table_name = null;
         if (is_object($model_properties)) {
-            $model_table_name = $model->name_plural;
+            $model_table_name = isset($model_properties->name_plural) ?
+                $model_properties->name_plural : NULL;
+            
         }
         if (is_null($model_table_name)) {
             $model_table_name = $model_name . 's';

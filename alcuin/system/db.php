@@ -432,7 +432,7 @@
         $authorization_name = $configuration->architecture->use_for_permission;
         $authentication_model = $configuration->architecture->models->{$authentication_name};
         $authorization_model = $configuration->architecture->models->{$authorization_name};
-        $authentication_table_name = get_model_plural_name($authentication_name, $authentification_model);
+        $authentication_table_name = get_model_plural_name($authentication_name, $authentication_model);
         $authorization_table_name = get_model_plural_name($authorization_name, $authorization_model);
 
 
@@ -457,7 +457,7 @@
         
         // get 'emais' of 'users'
         $instances_names = [];
-        if ($authentification_model->instances) {
+        if (isset($authentication_model->instances)) {
             foreach($authentication_model->instances as $instance) {
                 array_push($instances_names, $instance->{$authentification_id_property});
             }
@@ -466,7 +466,7 @@
         $relation_name = null;
         $relation_type = null;
         $via_table = null;
-        foreach ($authentication_model->relations as $_name => $relation) {
+        foreach ($authentication_model->relations as $name => $relation) {
             if ($relation->model === $authorization_name) {
                 $relation_name = $name;
                 $relation_type = $relation->type;
@@ -552,7 +552,8 @@
                     } else {
                         $line .= "TEXT CHARACTER SET 'utf8'";
                     }
-                    $default = "'" . $properties->default . "'";
+
+                    $default = empty($properties->default) ? "''" : "'" . $properties->default . "'";
                     break;
                 case 'hash':
                     $line .= "CHAR(64) CHARACTER SET 'utf8'";
@@ -560,7 +561,7 @@
                 case 'datetime':
                     $line .= 'DATETIME';
                     $default = "'0000-00-00 00:00:00'";
-                    if ($properties->default == 'now') {
+                    if (isset($properties->default) && $properties->default == 'now') {
                         $default = 'CURRENT_TIMESTAMP';
                     }
                     break;
@@ -574,7 +575,7 @@
                     break;
                 case 'bool':
                     $line .= "TINYINT(1)";
-                    if ($properties->default == true) {
+                    if (isset($properties->default) && $properties->default == true) {
                         $default = '1';
                     } else {
                         $default = '0';
@@ -588,7 +589,7 @@
                     break;
             }
         }
-        $line .= $properties->null_allowed ? '' : ' NOT';
+        $line .= isset($properties->null_allowed) ? '' : ' NOT';
         $line .= ' NULL';
         if (isset($properties->default)) {
             $line .= ' DEFAULT ' . $default;
