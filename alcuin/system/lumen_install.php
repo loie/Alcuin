@@ -14,7 +14,7 @@
         echo $feedback;
         echo '</code></pre>';
 
-        unlink('./prepare.sh');
+        // unlink('./prepare.sh');
         success();
     }
 ?>
